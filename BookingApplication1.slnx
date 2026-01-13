@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/Booking/">
+    <Project Path="Booking.Domain/Booking.Domain.csproj" />
+    <Project Path="Booking.Repository/Booking.Repository.csproj" />
+    <Project Path="Booking.Web/Booking.Web.csproj" />
+  </Folder>
+</Solution>
