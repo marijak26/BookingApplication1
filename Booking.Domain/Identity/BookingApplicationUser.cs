@@ -12,8 +12,9 @@ namespace Booking.Domain.Identity
     {
         public string? FirstName { get; set; }
         public string? LastName { get; set; }
-        public Reservation? UserReservations { get; set; }
+        public ReservationCart? ReservationCart { get; set; }
         public virtual ICollection<Accommodation>? Accommodations { get; set; }
+
 
 
     }

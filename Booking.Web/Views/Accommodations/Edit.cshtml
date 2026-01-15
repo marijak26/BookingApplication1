@@ -33,14 +33,22 @@
                     <input class="form-check-input" asp-for="IsRented" /> @Html.DisplayNameFor(model => model.IsRented)
                 </label>
             </div>
+            <!-- Category dropdown -->
             <div class="form-group">
-                <label asp-for="Category" class="control-label"></label>
-                <select asp-for="Category" class="form-control" asp-items="@(ViewData["Category"] as IEnumerable<SelectListItem>)"></select>
+                <label asp-for="Category"></label>
+                <select asp-for="Category" class="form-control" asp-items="@(ViewData["Category"] as IEnumerable<SelectListItem>)">
+                    <option value="">-- Select Category --</option>
+                </select>
                 <span asp-validation-for="Category" class="text-danger"></span>
             </div>
+
+            <!-- Host dropdown -->
             <div class="form-group">
-                <label asp-for="HostId" class="control-label"></label>
-                <select asp-for="HostId" class="form-control" asp-items="@(ViewData["HostId"] as SelectList)"></select>
+                <label asp-for="HostId"></label>
+                <select asp-for="HostId" class="form-control" asp-items="@(ViewData["HostId"] as SelectList)">
+                    <option value="">-- Select Host --</option>
+                </select>
+                <span asp-validation-for="HostId" class="text-danger"></span>
             </div>
 
             <input type="hidden" asp-for="Id" />

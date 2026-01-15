@@ -2,6 +2,7 @@
   <Folder Name="/Booking/">
     <Project Path="Booking.Domain/Booking.Domain.csproj" />
     <Project Path="Booking.Repository/Booking.Repository.csproj" />
+    <Project Path="Booking.Service/Booking.Service.csproj" Id="ad49fd1f-05f8-418d-93ba-f133d2343bb1" />
     <Project Path="Booking.Web/Booking.Web.csproj" />
   </Folder>
 </Solution>

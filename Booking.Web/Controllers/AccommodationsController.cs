@@ -1,68 +1,62 @@
 ﻿using Booking.Domain.DomainModels;
+using Booking.Domain.DTO;
 using Booking.Domain.Enum;
 using Booking.Repository;
+using Booking.Service.Interface;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Booking.Web.Controllers
 {
     public class AccommodationsController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IAccommodationService _accommodationService;
 
-        public AccommodationsController(ApplicationDbContext context)
+        public AccommodationsController(IAccommodationService accommodationService)
         {
-            _context = context;
+            _accommodationService = accommodationService;
         }
 
         // GET: Accommodations
-        public async Task<IActionResult> Index()
+        public IActionResult Index()
         {
-            var applicationDbContext = _context.Accommodations.Include(a => a.Host);
-            return View(await applicationDbContext.ToListAsync());
+            return View(_accommodationService.GetAll());
         }
 
         // GET: Accommodations/Details/5
-        public async Task<IActionResult> Details(Guid? id)
+        public IActionResult Details(Guid id)
         {
-            if (id == null)
+            var acc = _accommodationService.GetById(id);
+            if (acc == null)
             {
                 return NotFound();
             }
-
-            var accommodation = await _context.Accommodations
-                .Include(a => a.Host)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (accommodation == null)
-            {
-                return NotFound();
-            }
-
-            return View(accommodation);
+            return View(acc);
         }
 
         // GET: Accommodations/Create
         public IActionResult Create()
         {
-            var hosts = _context.Hosts.ToList();
-            ViewData["HostId"] = new SelectList(hosts, "Id", "FullName");
+            ViewData["Category"] = Enum.GetValues(typeof(AccommodationCategory))
+                                       .Cast<AccommodationCategory>()
+                                       .Select(c => new SelectListItem
+                                       {
+                                           Text = c.ToString(),
+                                           Value = ((int)c).ToString()
+                                       });
 
-            var categories = Enum.GetValues(typeof(AccommodationCategory))
-                                 .Cast<AccommodationCategory>()
-                                 .Select(c => new SelectListItem
-                                 {
-                                     Value = ((int)c).ToString(),
-                                     Text = c.ToString()
-                                 }).ToList();
-            ViewData["Category"] = categories;
+            var hosts = _accommodationService.GetAllHosts().ToList();
+            ViewData["HostId"] = new SelectList(hosts, "Id", "FullName");
 
             return View();
         }
+
 
 
 
@@ -71,63 +65,50 @@ namespace Booking.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Description,PricePerNight,IsRented,Category,HostId,Id")] Accommodation accommodation)
+        public IActionResult Create([Bind("Name,Description,PricePerNight,IsRented,Category,HostId,Id")] Accommodation accommodation)
         {
             if (ModelState.IsValid)
             {
                 accommodation.Id = Guid.NewGuid();
-                _context.Add(accommodation);
-                await _context.SaveChangesAsync();
+                _accommodationService.Insert(accommodation);
                 return RedirectToAction(nameof(Index));
             }
 
-            var hosts = _context.Hosts.ToList();
-            ViewData["HostId"] = new SelectList(hosts, "Id", "FullName", accommodation.HostId);
-
-            var categories = Enum.GetValues(typeof(AccommodationCategory))
-                                 .Cast<AccommodationCategory>()
-                                 .Select(c => new SelectListItem
-                                 {
-                                     Value = ((int)c).ToString(),
-                                     Text = c.ToString()
-                                 }).ToList();
-            ViewData["Category"] = categories;
+            ViewData["Category"] = Enum.GetValues(typeof(AccommodationCategory))
+                                       .Cast<AccommodationCategory>()
+                                       .Select(c => new SelectListItem
+                                       {
+                                           Text = c.ToString(),
+                                           Value = ((int)c).ToString()
+                                       });
+            var hosts = _accommodationService.GetAllHosts().ToList();
+            ViewData["HostId"] = new SelectList(hosts, "Id", "FullName");
 
             return View(accommodation);
+
         }
 
 
 
         // GET: Accommodations/Edit/5
-        public async Task<IActionResult> Edit(Guid? id)
+        public IActionResult Edit(Guid id)
         {
-            if (id == null)
+            var acc = _accommodationService.GetById(id);
+            if (acc == null)
             {
                 return NotFound();
             }
+            ViewData["Category"] = Enum.GetValues(typeof(AccommodationCategory))
+                                       .Cast<AccommodationCategory>()
+                                       .Select(c => new SelectListItem
+                                       {
+                                           Text = c.ToString(),
+                                           Value = ((int)c).ToString()
+                                       });
 
-            var accommodation = await _context.Accommodations
-                                      .Include(a => a.Host) 
-                                      .FirstOrDefaultAsync(a => a.Id == id);
-
-            if (accommodation == null)
-                return NotFound();
-
-            ViewData["HostId"] = new SelectList(
-                _context.Hosts,
-                "Id",                 
-                "FullName",           
-                accommodation.HostId  
-            );
-            var categories = Enum.GetValues(typeof(AccommodationCategory))
-                         .Cast<AccommodationCategory>()
-                         .Select(c => new SelectListItem
-                         {
-                             Value = ((int)c).ToString(),
-                             Text = c.ToString()
-                         }).ToList();
-            ViewData["Category"] = categories;
-            return View(accommodation);
+            var hosts = _accommodationService.GetAllHosts().ToList();
+            ViewData["HostId"] = new SelectList(hosts, "Id", "FullName");
+            return View(acc);
         }
 
         // POST: Accommodations/Edit/5
@@ -135,7 +116,7 @@ namespace Booking.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Guid id, [Bind("Name,Description,PricePerNight,IsRented,Category,HostId,Id")] Accommodation accommodation)
+        public IActionResult Edit(Guid id, [Bind("Name,Description,PricePerNight,IsRented,Category,HostId,Id")] Accommodation accommodation)
         {
             if (id != accommodation.Id)
             {
@@ -144,65 +125,67 @@ namespace Booking.Web.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(accommodation);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AccommodationExists(accommodation.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                _accommodationService.Update(accommodation);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["HostId"] = new SelectList(_context.Hosts, "Id", "FullName", accommodation.HostId);
+
+            ViewData["Category"] = Enum.GetValues(typeof(AccommodationCategory))
+                                       .Cast<AccommodationCategory>()
+                                       .Select(c => new SelectListItem
+                                       {
+                                           Text = c.ToString(),
+                                           Value = ((int)c).ToString(),
+                                           Selected = c == accommodation.Category
+                                       }).ToList();
+
+            var hosts = _accommodationService.GetAllHosts().ToList();
+            ViewData["HostId"] = new SelectList(hosts, "Id", "FullName", accommodation.HostId);
+
             return View(accommodation);
         }
 
         // GET: Accommodations/Delete/5
-        public async Task<IActionResult> Delete(Guid? id)
+        public IActionResult Delete(Guid id)
         {
-            if (id == null)
+            var acc = _accommodationService.GetById(id);
+            if (acc == null)
             {
                 return NotFound();
             }
-
-            var accommodation = await _context.Accommodations
-                .Include(a => a.Host)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (accommodation == null)
-            {
-                return NotFound();
-            }
-
-            return View(accommodation);
+            return View(acc);
         }
 
         // POST: Accommodations/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        public IActionResult DeleteConfirmed(Guid id)
         {
-            var accommodation = await _context.Accommodations.FindAsync(id);
-            if (accommodation != null)
-            {
-                _context.Accommodations.Remove(accommodation);
-            }
-
-            await _context.SaveChangesAsync();
+            _accommodationService.DeleteById(id);
             return RedirectToAction(nameof(Index));
         }
 
         private bool AccommodationExists(Guid id)
         {
-            return _context.Accommodations.Any(e => e.Id == id);
+            return _accommodationService.GetById(id) != null;
+        }
+
+        public IActionResult AddToCart(Guid id)
+        {
+            var model = _accommodationService.GetSelectedAccommodation(id);
+            return View("AddToReservationCart", model);
+        }
+
+        [HttpPost]
+        public IActionResult AddToCart(AddToReservationCartDTO model)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            _accommodationService.AddAccommodationToReservationCart(
+                model.SelectedAccommodationId,
+                Guid.Parse(userId),
+                model.Nights);
+
+            return RedirectToAction("Index", "ReservationCarts");
+
         }
     }
 }

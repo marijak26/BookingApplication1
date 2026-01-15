@@ -1,0 +1,52 @@
+﻿@using Booking.Domain.Enum
+@model IEnumerable<Booking.Domain.DomainModels.Reservation>
+
+<h2>My Reservations</h2>
+
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-secondary">All</a>
+    <a asp-action="Index" asp-route-status="active" class="btn btn-success">Active</a>
+    <a asp-action="Index" asp-route-status="cancelled" class="btn btn-danger">Cancelled</a>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>User</th>
+            <th>Total Price</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr style="@(item.Status == ReservationStatus.Cancelled ? "opacity:0.6" : "")">
+                <td>@item.User.FirstName @item.User.LastName</td>
+                <td>@item.TotalPrice</td>
+                <td>
+                    @if (item.Status == ReservationStatus.Confirmed)
+                    {
+                        <span class="badge bg-success">Confirmed</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Cancelled</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+
+                    @if (item.Status == ReservationStatus.Confirmed)
+                    {
+                        <span> | </span>
+                        <a asp-action="Cancel" asp-route-id="@item.Id"
+                           onclick="return confirm('Cancel this reservation?');">
+                            Cancel
+                        </a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,4 +1,5 @@
-﻿using Booking.Domain.Identity;
+﻿using Booking.Domain.Enum;
+using Booking.Domain.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,8 @@ namespace Booking.Domain.DomainModels
         public string? UserId { get; set; }
         public BookingApplicationUser? User { get; set; }
         public double TotalPrice { get; set; }
+        public ReservationStatus Status { get; set; } = ReservationStatus.Confirmed;
+
         public virtual ICollection<AccommodationInReservation>? AccommodationInReservations { get; set; }
 
 

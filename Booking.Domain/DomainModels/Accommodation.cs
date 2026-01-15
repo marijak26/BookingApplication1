@@ -18,6 +18,9 @@ namespace Booking.Domain.DomainModels
 
         public Guid HostId { get; set; }
         public AccommodationHost? Host { get; set; }
+
         public virtual ICollection<AccommodationInReservation>? AccommodationInReservations { get; set; }
+        public virtual ICollection<AccommodationInReservationCart>? AccommodationInReservationCarts { get; set; }
+
     }
 }

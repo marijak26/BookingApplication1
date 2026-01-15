@@ -1,0 +1,53 @@
+﻿using Booking.Domain.DomainModels;
+using Booking.Domain.Enum;
+using Booking.Repository;
+using Booking.Service.Interface;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
+
+namespace Booking.Web.Controllers
+{
+    public class ReservationsController : Controller
+    {
+        private readonly IReservationService _reservationService;
+
+        public ReservationsController(IReservationService reservationService)
+        {
+            _reservationService = reservationService;
+        }
+
+        public IActionResult Index(string status)
+        {
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            var reservations = _reservationService.GetAllForUser(userId);
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                if (status == "active")
+                    reservations = reservations.Where(r => r.Status == ReservationStatus.Confirmed).ToList();
+                else if (status == "cancelled")
+                    reservations = reservations.Where(r => r.Status == ReservationStatus.Cancelled).ToList();
+            }
+
+            return View(reservations);
+        }
+
+        public IActionResult Details(Guid id)
+        {
+            var res = _reservationService.GetReservation(id);
+            if (res == null)
+            {
+                return NotFound();
+            }
+            return View(res);
+        }
+
+    }
+}

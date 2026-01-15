@@ -4,6 +4,7 @@ using Booking.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Booking.Repository.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260115135356_Migration8")]
+    partial class Migration8
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -89,8 +92,23 @@ namespace Booking.Repository.Migrations
                     b.Property<Guid>("AccommodationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("Nights")
+                    b.Property<int>("Category")
                         .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("HostId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("IsRented")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("PricePerNight")
+                        .HasColumnType("float");
 
                     b.Property<Guid>("ReservationId")
                         .HasColumnType("uniqueidentifier");
@@ -98,6 +116,8 @@ namespace Booking.Repository.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AccommodationId");
+
+                    b.HasIndex("HostId");
 
                     b.HasIndex("ReservationId");
 
@@ -113,6 +133,9 @@ namespace Booking.Repository.Migrations
                     b.Property<Guid>("AccommodationId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<Guid?>("AccommodationInReservationId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("Nights")
                         .HasColumnType("int");
 
@@ -122,6 +145,8 @@ namespace Booking.Repository.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AccommodationId");
+
+                    b.HasIndex("AccommodationInReservationId");
 
                     b.HasIndex("ReservationCartId");
 
@@ -147,9 +172,6 @@ namespace Booking.Repository.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
 
                     b.Property<double>("TotalPrice")
                         .HasColumnType("float");
@@ -425,6 +447,12 @@ namespace Booking.Repository.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Booking.Domain.DomainModels.AccommodationHost", "Host")
+                        .WithMany()
+                        .HasForeignKey("HostId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Booking.Domain.DomainModels.Reservation", "Reservation")
                         .WithMany("AccommodationInReservations")
                         .HasForeignKey("ReservationId")
@@ -432,6 +460,8 @@ namespace Booking.Repository.Migrations
                         .IsRequired();
 
                     b.Navigation("Accommodation");
+
+                    b.Navigation("Host");
 
                     b.Navigation("Reservation");
                 });
@@ -444,8 +474,12 @@ namespace Booking.Repository.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Booking.Domain.DomainModels.AccommodationInReservation", null)
+                        .WithMany("AccommodationInReservationCarts")
+                        .HasForeignKey("AccommodationInReservationId");
+
                     b.HasOne("Booking.Domain.DomainModels.ReservationCart", "ReservationCart")
-                        .WithMany("Accommodations")
+                        .WithMany("AccommodationInReservationCarts")
                         .HasForeignKey("ReservationCartId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -547,6 +581,11 @@ namespace Booking.Repository.Migrations
                     b.Navigation("Accommodations");
                 });
 
+            modelBuilder.Entity("Booking.Domain.DomainModels.AccommodationInReservation", b =>
+                {
+                    b.Navigation("AccommodationInReservationCarts");
+                });
+
             modelBuilder.Entity("Booking.Domain.DomainModels.Country", b =>
                 {
                     b.Navigation("Hosts");
@@ -559,7 +598,7 @@ namespace Booking.Repository.Migrations
 
             modelBuilder.Entity("Booking.Domain.DomainModels.ReservationCart", b =>
                 {
-                    b.Navigation("Accommodations");
+                    b.Navigation("AccommodationInReservationCarts");
                 });
 
             modelBuilder.Entity("Booking.Domain.Identity.BookingApplicationUser", b =>

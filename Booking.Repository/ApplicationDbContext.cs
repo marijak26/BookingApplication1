@@ -12,10 +12,69 @@ namespace Booking.Repository
         {
         }
 
-        public virtual DbSet<Accommodation> Accommodations { get; set; }
-        public virtual DbSet<AccommodationHost> Hosts { get; set; }
-        public virtual DbSet<Country> Countries { get; set; }
-        public virtual DbSet<Reservation> Reservations { get; set; }
-        public virtual DbSet<AccommodationInReservation> AccommodationInReservations { get; set; }
+        public DbSet<Accommodation> Accommodations { get; set; }
+        public DbSet<AccommodationHost> Hosts { get; set; }
+        public DbSet<Country> Countries { get; set; }
+        public DbSet<Reservation> Reservations { get; set; }
+        public DbSet<ReservationCart> ReservationCarts { get; set; }
+        public DbSet<AccommodationInReservation> AccommodationInReservations { get; set; }
+        public DbSet<AccommodationInReservationCart> AccommodationInReservationCarts { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<AccommodationHost>()
+                .HasOne(h => h.Country)
+                .WithMany(c => c.Hosts)
+                .HasForeignKey(h => h.CountryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Accommodation>()
+                .HasOne(a => a.Host)
+                .WithMany(h => h.Accommodations)
+                .HasForeignKey(a => a.HostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Reservation>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<ReservationCart>()
+                .HasOne(rc => rc.User)
+                .WithOne()
+                .HasForeignKey<ReservationCart>(rc => rc.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<AccommodationInReservation>()
+                .HasOne(ar => ar.Accommodation)
+                .WithMany(a => a.AccommodationInReservations)
+                .HasForeignKey(ar => ar.AccommodationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<AccommodationInReservation>()
+                .HasOne(ar => ar.Reservation)
+                .WithMany(r => r.AccommodationInReservations)
+                .HasForeignKey(ar => ar.ReservationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<AccommodationInReservationCart>()
+                .HasKey(x => x.Id);
+
+            builder.Entity<AccommodationInReservationCart>()
+                .HasOne(ac => ac.Accommodation)
+                .WithMany(a => a.AccommodationInReservationCarts)
+                .HasForeignKey(ac => ac.AccommodationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<AccommodationInReservationCart>()
+                .HasOne(ac => ac.ReservationCart)
+                .WithMany(rc => rc.Accommodations)
+                .HasForeignKey(ac => ac.ReservationCartId)
+                .OnDelete(DeleteBehavior.Cascade);
+
         }
+    }
 }

@@ -1,0 +1,28 @@
+﻿@model Booking.Domain.DTO.AddToReservationCartDTO
+
+<div class="container">
+    <form method="post" asp-action="AddToCart">
+
+        <input type="hidden" asp-for="SelectedAccommodationId" value="@Model.SelectedAccommodationId" class="form-control" />
+
+        <div class="row mt-4">
+            <div class="form-group">
+                <label asp-for="SelectedAccommodationName" class="control-label"></label>
+                <input disabled="disabled" asp-for="SelectedAccommodationName" class="form-control" />
+                <span asp-validation-for="SelectedAccommodationName" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="form-group">
+                <label asp-for="Nights" class="control-label"></label>
+                <input asp-for="Nights" type="number" min="1" class="form-control" />
+                <span asp-validation-for="Nights" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <button type="submit" class="btn btn-success">Add To Reservation Cart</button>
+        </div>
+    </form>
+</div>
