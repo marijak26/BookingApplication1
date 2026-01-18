@@ -27,7 +27,10 @@
 <div class="container mt-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="section-title mb-0">Available accommodations</h2>
-        <a asp-action="Create" class="btn btn-primary">+ Add accommodation</a>
+        @if (User.IsInRole("Admin"))
+        {
+            <a asp-action="Create" class="btn btn-primary">+ Add accommodation</a>
+        }
     </div>
 
     @{
@@ -57,14 +60,18 @@
 
                             <div class="mt-auto d-flex justify-content-between align-items-center">
                                 <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm">Details</a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <div class="d-flex gap-1">
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Edit</a>
 
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                        onclick="if(confirm('Are you sure?')) { document.getElementById('delete-form-@item.Id').submit(); }">
+                                            Delete
+                                        </button>
+                                    </div>
+                                }
                                 <div class="d-flex gap-1">
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-warning btn-sm">Edit</a>
-
-                                    <button type="button" class="btn btn-danger btn-sm"
-                                            onclick="if(confirm('Are you sure?')) { document.getElementById('delete-form-@item.Id').submit(); }">
-                                        Delete
-                                    </button>
 
                                     <a asp-action="AddToCart" asp-route-id="@item.Id" class="btn btn-success btn-sm">Reserve</a>
 

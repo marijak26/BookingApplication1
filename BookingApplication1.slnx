@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/AdminApplication/">
+    <Project Path="AdminApplication/AdminApplication.csproj" Id="c79e530f-8aae-40b2-a33e-90dd05cb41ae" />
+  </Folder>
   <Folder Name="/Booking/">
     <Project Path="Booking.Domain/Booking.Domain.csproj" />
     <Project Path="Booking.Repository/Booking.Repository.csproj" />

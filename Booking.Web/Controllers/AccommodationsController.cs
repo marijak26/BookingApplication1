@@ -4,6 +4,7 @@ using Booking.Domain.Enum;
 using Booking.Repository;
 using Booking.Service.Implementation;
 using Booking.Service.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,7 @@ using System.Threading.Tasks;
 
 namespace Booking.Web.Controllers
 {
+    [Authorize]
     public class AccommodationsController : Controller
     {
         private readonly IAccommodationService _accommodationService;
@@ -57,6 +59,7 @@ namespace Booking.Web.Controllers
         }
 
         // GET: Accommodations/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             ViewData["Category"] = Enum.GetValues(typeof(AccommodationCategory))
@@ -81,6 +84,7 @@ namespace Booking.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public IActionResult Create([Bind("Name,Description,PricePerNight,IsRented,Category,HostId")]
         Accommodation accommodation,
         IFormFile Image)
@@ -135,6 +139,7 @@ namespace Booking.Web.Controllers
 
 
         // GET: Accommodations/Edit/5
+        [Authorize(Roles = "Admin")]
         public IActionResult Edit(Guid id)
         {
             var acc = _accommodationService.GetById(id);
@@ -160,6 +165,7 @@ namespace Booking.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public IActionResult Edit(
     Guid id,
     [Bind("Id,Name,Description,PricePerNight,IsRented,Category,HostId")] Accommodation accommodation,
@@ -224,6 +230,7 @@ namespace Booking.Web.Controllers
 
 
         // GET: Accommodations/Delete/5
+        [Authorize(Roles = "Admin")]
         public IActionResult Delete(Guid id)
         {
             var acc = _accommodationService.GetById(id);
@@ -235,6 +242,7 @@ namespace Booking.Web.Controllers
         }
 
         // POST: Accommodations/Delete/5
+        [Authorize(Roles = "Admin")]
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(Guid id)

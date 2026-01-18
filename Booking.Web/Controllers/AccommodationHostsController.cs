@@ -2,6 +2,7 @@
 using Booking.Repository;
 using Booking.Service.Implementation;
 using Booking.Service.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 
 namespace Booking.Web.Controllers
 {
+    [Authorize]
     public class AccommodationHostsController : Controller
     {
         private readonly IAccommodationHostService _hostService;
@@ -43,6 +45,7 @@ namespace Booking.Web.Controllers
         }
 
         // GET: AccommodationHosts/Create
+        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             LoadCountriesDropdown();
@@ -54,6 +57,7 @@ namespace Booking.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("FullName,ContactEmail,CountryId,Id")] AccommodationHost accommodationHost)
         {
             if (!ModelState.IsValid)
@@ -67,6 +71,7 @@ namespace Booking.Web.Controllers
         }
 
         // GET: AccommodationHosts/Edit/5
+        [Authorize(Roles = "Admin")]
         public IActionResult Edit(Guid? id)
         {
             if (id == null) return NotFound();
@@ -83,6 +88,7 @@ namespace Booking.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public IActionResult Edit(Guid id, [Bind("FullName,ContactEmail,CountryId,Id")] AccommodationHost accommodationHost)
         {
             if (id != accommodationHost.Id) return NotFound();
@@ -98,6 +104,7 @@ namespace Booking.Web.Controllers
         }
 
         // GET: AccommodationHosts/Delete/5
+        [Authorize(Roles = "Admin")]
         public IActionResult Delete(Guid? id)
         {
             if (id == null) return NotFound();
@@ -111,6 +118,7 @@ namespace Booking.Web.Controllers
         // POST: AccommodationHosts/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
         {
             _hostService.Delete(id);

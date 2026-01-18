@@ -1,30 +1,72 @@
-﻿@model Booking.Domain.DomainModels.Reservation
+﻿@using Booking.Domain.Enum
+@model Booking.Domain.DomainModels.Reservation
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Reservation Details";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Details</h1>
+<h2>Reservation Details</h2>
 
-<div>
-    <h4>Reservation</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.User)
-        </dt>
-        <dd class = "col-sm-10">
-            @Model.User.FirstName @Model.User.LastName
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TotalPrice)
-        </dt>
-        <dd class="col-sm-10">
-            @($"{Model.TotalPrice} €")
-        </dd>
-    </dl>
+<hr />
+
+<div class="mb-3">
+    <strong>User:</strong>
+    @Model.User.FirstName @Model.User.LastName
 </div>
-<div>
-    <a asp-action="Index">Back to List</a>
+
+<div class="mb-3">
+    <strong>Status:</strong>
+    @if (Model.Status == ReservationStatus.Confirmed)
+    {
+        <span class="badge bg-success">Confirmed</span>
+    }
+    else
+    {
+        <span class="badge bg-danger">Cancelled</span>
+    }
+</div>
+
+<div class="mb-3">
+    <strong>Total Price:</strong> @Model.TotalPrice.ToString("0") €
+</div>
+
+<h4>Accommodations</h4>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Accommodation</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Nights</th>
+            <th>Price / Night</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var acc in Model.AccommodationInReservations)
+        {
+            <tr>
+                <td>@acc.Accommodation?.Name</td>
+                <td>@acc.FromDate.ToString("dd/MM/yyyy")</td>
+                <td>@acc.ToDate.ToString("dd/MM/yyyy")</td>
+                <td>@((acc.ToDate - acc.FromDate).Days)</td>
+                <td>@acc.Accommodation?.PricePerNight €</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="mt-4">
+    <a asp-action="Index" class="btn btn-secondary">← Back to Reservations</a>
+
+    @if (Model.Status == ReservationStatus.Confirmed)
+    {
+        <a asp-action="Cancel"
+           asp-route-id="@Model.Id"
+           class="btn btn-danger ms-2"
+           onclick="return confirm('Cancel this reservation?');">
+            Cancel Reservation
+        </a>
+    }
 </div>

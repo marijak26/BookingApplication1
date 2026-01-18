@@ -2,6 +2,7 @@
 using Booking.Domain.Enum;
 using Booking.Repository;
 using Booking.Service.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 
 namespace Booking.Web.Controllers
 {
+    [Authorize]
     public class ReservationsController : Controller
     {
         private readonly IReservationService _reservationService;
