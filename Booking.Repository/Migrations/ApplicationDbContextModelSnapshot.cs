@@ -40,6 +40,9 @@ namespace Booking.Repository.Migrations
                     b.Property<Guid>("HostId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsRented")
                         .HasColumnType("bit");
 
@@ -89,11 +92,14 @@ namespace Booking.Repository.Migrations
                     b.Property<Guid>("AccommodationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("Nights")
-                        .HasColumnType("int");
+                    b.Property<DateTime>("FromDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("ReservationId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ToDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -113,11 +119,14 @@ namespace Booking.Repository.Migrations
                     b.Property<Guid>("AccommodationId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("Nights")
-                        .HasColumnType("int");
+                    b.Property<DateTime>("FromDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<Guid>("ReservationCartId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ToDate")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 

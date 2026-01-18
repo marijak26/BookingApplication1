@@ -11,28 +11,48 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <!-- Hidden Id -->
+            <input type="hidden" asp-for="Id" />
+
             <div class="form-group">
                 <label asp-for="Name" class="control-label"></label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="Description" class="control-label"></label>
                 <input asp-for="Description" class="form-control" />
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
+
             <div class="form-group">
                 <label asp-for="PricePerNight" class="control-label"></label>
                 <input asp-for="PricePerNight" class="form-control" />
                 <span asp-validation-for="PricePerNight" class="text-danger"></span>
             </div>
+
             <div class="form-group form-check">
-                <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsRented" /> @Html.DisplayNameFor(model => model.IsRented)
-                </label>
+                <input class="form-check-input" asp-for="IsRented" />
+                <label class="form-check-label">@Html.DisplayNameFor(model => model.IsRented)</label>
             </div>
+
+            <!-- Current Image -->
+            <div class="form-group">
+                <label>Current Image</label><br />
+                <img src="@Model.ImageUrl" alt="@Model.Name" class="img-fluid mb-2" style="max-width:200px;" />
+            </div>
+
+            <!-- Upload new Image -->
+            <div class="form-group">
+                <label>Change Image</label>
+                <input type="file" name="Image" class="form-control" />
+            </div>
+
             <!-- Category dropdown -->
             <div class="form-group">
                 <label asp-for="Category"></label>
@@ -51,9 +71,8 @@
                 <span asp-validation-for="HostId" class="text-danger"></span>
             </div>
 
-            <input type="hidden" asp-for="Id" />
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <button type="submit" class="btn btn-primary mt-2">Save</button>
             </div>
         </form>
     </div>
@@ -64,5 +83,7 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

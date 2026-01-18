@@ -36,21 +36,50 @@ namespace Booking.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public IActionResult Confirm()
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Confirm(Guid cartItemId)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            _reservationCartService.ConfirmReservation(Guid.Parse(userId));
-            return RedirectToAction("Index", "Reservations");
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var result = _reservationCartService.ConfirmReservation(cartItemId, userId);
+
+            if (!result.Success)
+            {
+                TempData["Error"] = result.Message;
+                return RedirectToAction("Index");
+            }
+
+            TempData["Success"] = result.Message;
+            return RedirectToAction("Index");
         }
 
-        public IActionResult Cancel()
+        [HttpPost]
+        public IActionResult ConfirmCart()
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
-            _reservationCartService.CancelReservation(Guid.Parse(userId));
+            var result = _reservationCartService.ConfirmWholeCart(userId);
 
-            return RedirectToAction("Index", "Reservations");
+            if (!result.Success)
+            {
+                TempData["Error"] = result.Message;
+                return RedirectToAction("Index");
+            }
+
+            TempData["Success"] = result.Message;
+            return RedirectToAction("Index");
         }
+
+
+        [HttpPost]
+        public IActionResult Clear()
+        {
+            var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            _reservationCartService.ClearCart(userId);
+
+            return RedirectToAction("Index");
+        }
+
 
 
 

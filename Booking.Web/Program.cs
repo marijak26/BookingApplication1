@@ -2,6 +2,7 @@ using Booking.Domain.Identity;
 using Booking.Repository;
 using Booking.Repository.Implementation;
 using Booking.Repository.Interface;
+using Booking.Service.Extensions;
 using Booking.Service.Implementation;
 using Booking.Service.Interface;
 using Microsoft.AspNetCore.Identity;
@@ -22,6 +23,10 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
 
+builder.Services.AddHttpClient<ICountryService, CountryService>();
+
+builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
+builder.Services.AddScoped<IAccommodationHostService, AccommodationHostService>();
 builder.Services.AddTransient<IAccommodationService, AccommodationService>();
 builder.Services.AddTransient<IReservationService, ReservationService>();
 builder.Services.AddTransient<IReservationCartService, ReservationCartService>();
@@ -43,6 +48,7 @@ else
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+
 app.UseRouting();
 
 app.UseAuthorization();
@@ -51,5 +57,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+await app.Services.SeedCountriesAsync();
+
 
 app.Run();

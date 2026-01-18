@@ -58,5 +58,24 @@ namespace Booking.Service.Implementation
             return reservation;
         }
 
+        public void CancelReservation(Guid reservationId)
+        {
+            var reservation = _reservationRepository.Get(
+                selector: x => x,
+                predicate: x => x.Id == reservationId
+            );
+
+            if (reservation == null)
+                throw new Exception("Reservation not found");
+
+            if (reservation.Status != ReservationStatus.Confirmed)
+                throw new Exception("Only confirmed reservations can be cancelled");
+
+            reservation.Status = ReservationStatus.Cancelled;
+
+            _reservationRepository.Update(reservation);
+        }
+
+
     }
 }

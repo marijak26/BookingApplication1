@@ -1,36 +1,23 @@
 ﻿@model IEnumerable<Booking.Domain.DomainModels.Country>
 
-@{
-    ViewData["Title"] = "Index";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
+<h2>Countries</h2>
 
-<h1>Index</h1>
+<a asp-action="Import" class="btn btn-primary mb-3">
+    Import Countries from API
+</a>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Name)
-            </th>
-            <th></th>
+            <th>Name</th>
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
+        @foreach (var country in Model.OrderBy(c => c.Name))
+        {
+            <tr>
+                <td>@country.Name</td>
+            </tr>
+        }
     </tbody>
 </table>

@@ -2,6 +2,7 @@
 using Booking.Domain.DTO;
 using Booking.Domain.Enum;
 using Booking.Repository;
+using Booking.Service.Implementation;
 using Booking.Service.Interface;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -17,16 +18,31 @@ namespace Booking.Web.Controllers
     public class AccommodationsController : Controller
     {
         private readonly IAccommodationService _accommodationService;
+        private readonly ICountryService _countryService;
 
-        public AccommodationsController(IAccommodationService accommodationService)
+
+        public AccommodationsController(IAccommodationService accommodationService, ICountryService countryService)
         {
             _accommodationService = accommodationService;
+            _countryService = countryService;
         }
 
         // GET: Accommodations
-        public IActionResult Index()
+        public IActionResult Index(Guid? countryId)
         {
-            return View(_accommodationService.GetAll());
+            var accommodations = _accommodationService.GetAll();
+
+            if (countryId.HasValue)
+            {
+                accommodations = _accommodationService.GetByCountry(countryId.Value);
+            }
+
+            var countries = _countryService.GetAllCountriesFromDb()
+                .OrderBy(c => c.Name)
+                .ToList();
+            ViewData["Countries"] = new SelectList(countries, "Id", "Name");
+
+            return View(accommodations);
         }
 
         // GET: Accommodations/Details/5
@@ -65,28 +81,56 @@ namespace Booking.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Create([Bind("Name,Description,PricePerNight,IsRented,Category,HostId,Id")] Accommodation accommodation)
+        public IActionResult Create([Bind("Name,Description,PricePerNight,IsRented,Category,HostId")]
+        Accommodation accommodation,
+        IFormFile Image)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                accommodation.Id = Guid.NewGuid();
-                _accommodationService.Insert(accommodation);
-                return RedirectToAction(nameof(Index));
+                ViewData["Category"] = Enum.GetValues(typeof(AccommodationCategory))
+                    .Cast<AccommodationCategory>()
+                    .Select(c => new SelectListItem
+                    {
+                        Text = c.ToString(),
+                        Value = ((int)c).ToString()
+                    });
+
+                var hosts = _accommodationService.GetAllHosts().ToList();
+                ViewData["HostId"] = new SelectList(hosts, "Id", "FullName");
+
+                return View(accommodation);
             }
 
-            ViewData["Category"] = Enum.GetValues(typeof(AccommodationCategory))
-                                       .Cast<AccommodationCategory>()
-                                       .Select(c => new SelectListItem
-                                       {
-                                           Text = c.ToString(),
-                                           Value = ((int)c).ToString()
-                                       });
-            var hosts = _accommodationService.GetAllHosts().ToList();
-            ViewData["HostId"] = new SelectList(hosts, "Id", "FullName");
+            if (Image != null && Image.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot/images/accommodations");
 
-            return View(accommodation);
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
 
+                var fileName = Guid.NewGuid() + Path.GetExtension(Image.FileName);
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    Image.CopyTo(stream);
+                }
+
+                accommodation.ImageUrl = "/images/accommodations/" + fileName;
+            }
+            else
+            {
+                accommodation.ImageUrl = "/images/accommodations/default.jpg";
+            }
+
+            accommodation.Id = Guid.NewGuid();
+            _accommodationService.Insert(accommodation);
+
+            return RedirectToAction(nameof(Index));
         }
+
 
 
 
@@ -116,33 +160,68 @@ namespace Booking.Web.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(Guid id, [Bind("Name,Description,PricePerNight,IsRented,Category,HostId,Id")] Accommodation accommodation)
+        public IActionResult Edit(
+    Guid id,
+    [Bind("Id,Name,Description,PricePerNight,IsRented,Category,HostId")] Accommodation accommodation,
+    IFormFile Image)
         {
             if (id != accommodation.Id)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _accommodationService.Update(accommodation);
-                return RedirectToAction(nameof(Index));
+                ViewData["Category"] = Enum.GetValues(typeof(AccommodationCategory))
+                    .Cast<AccommodationCategory>()
+                    .Select(c => new SelectListItem { Text = c.ToString(), Value = ((int)c).ToString() });
+
+                var hosts = _accommodationService.GetAllHosts().ToList();
+                ViewData["HostId"] = new SelectList(hosts, "Id", "FullName", accommodation.HostId);
+
+                return View(accommodation);
             }
 
-            ViewData["Category"] = Enum.GetValues(typeof(AccommodationCategory))
-                                       .Cast<AccommodationCategory>()
-                                       .Select(c => new SelectListItem
-                                       {
-                                           Text = c.ToString(),
-                                           Value = ((int)c).ToString(),
-                                           Selected = c == accommodation.Category
-                                       }).ToList();
+            var existing = _accommodationService.GetById(id);
+            if (existing == null)
+                return NotFound();
 
-            var hosts = _accommodationService.GetAllHosts().ToList();
-            ViewData["HostId"] = new SelectList(hosts, "Id", "FullName", accommodation.HostId);
+            if (Image != null && Image.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/accommodations");
+                if (!Directory.Exists(uploadsFolder))
+                    Directory.CreateDirectory(uploadsFolder);
 
-            return View(accommodation);
+                var fileName = Guid.NewGuid() + Path.GetExtension(Image.FileName);
+                var filePath = Path.Combine(uploadsFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    Image.CopyTo(stream);
+                }
+
+                if (!string.IsNullOrEmpty(existing.ImageUrl) && !existing.ImageUrl.Contains("default.jpg"))
+                {
+                    var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", existing.ImageUrl.TrimStart('/').Replace("/", "\\"));
+                    if (System.IO.File.Exists(oldFilePath))
+                        System.IO.File.Delete(oldFilePath);
+                }
+
+                existing.ImageUrl = "/images/accommodations/" + fileName;
+            }
+
+            existing.Name = accommodation.Name;
+            existing.Description = accommodation.Description;
+            existing.PricePerNight = accommodation.PricePerNight;
+            existing.IsRented = accommodation.IsRented;
+            existing.Category = accommodation.Category;
+            existing.HostId = accommodation.HostId;
+
+            _accommodationService.Update(existing);
+
+            return RedirectToAction(nameof(Index));
         }
+
 
         // GET: Accommodations/Delete/5
         public IActionResult Delete(Guid id)
@@ -176,16 +255,46 @@ namespace Booking.Web.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult AddToCart(AddToReservationCartDTO model)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!ModelState.IsValid)
+            {
+                return View("AddToReservationCart", model);
+            }
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim))
+                return Unauthorized();
+
+            var userId = Guid.Parse(userIdClaim);
+
             _accommodationService.AddAccommodationToReservationCart(
                 model.SelectedAccommodationId,
-                Guid.Parse(userId),
-                model.Nights);
+                userId,
+                model.FromDate,
+                model.ToDate
+            );
 
             return RedirectToAction("Index", "ReservationCarts");
-
         }
+
+        [HttpPost]
+        public IActionResult CheckAvailability(Guid accommodationId, DateTime from, DateTime to)
+        {
+            var available = _accommodationService
+                .IsAccommodationAvailable(accommodationId, from, to);
+
+            return Json(new { available });
+        }
+
+
+        [HttpGet]
+        public IActionResult Calendar(Guid id)
+        {
+            var events = _accommodationService.GetAccommodationCalendar(id);
+            return Json(events);
+        }
+
     }
 }

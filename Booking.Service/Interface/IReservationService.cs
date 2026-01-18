@@ -12,6 +12,7 @@ namespace Booking.Service.Interface
         List<Reservation> GetAllReservations();
         List<Reservation> GetAllForUser(Guid userId);
         Reservation GetReservation(Guid id);
+        void CancelReservation(Guid reservationId);
     }
 
 }

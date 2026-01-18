@@ -19,7 +19,11 @@ namespace Booking.Service.Interface
         Accommodation DeleteById(Guid id);
 
         AddToReservationCartDTO GetSelectedAccommodation(Guid id);
-        void AddAccommodationToReservationCart(Guid accommodationId, Guid userId, int nights);
+        ReservationResultDTO AddAccommodationToReservationCart(Guid accommodationId, Guid userId, DateTime fromDate,DateTime toDate);
+        List<Accommodation> GetByCountry(Guid countryId);
+        bool IsAccommodationAvailable(Guid accommodationId, DateTime from, DateTime to);
+        List<CalendarEventDTO> GetAccommodationCalendar(Guid accommodationId);
+
     }
 
 }

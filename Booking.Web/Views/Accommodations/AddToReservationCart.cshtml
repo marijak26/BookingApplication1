@@ -1,28 +1,95 @@
 ﻿@model Booking.Domain.DTO.AddToReservationCartDTO
 
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
 <div class="container">
+
     <form method="post" asp-action="AddToCart">
+        @Html.AntiForgeryToken()
 
-        <input type="hidden" asp-for="SelectedAccommodationId" value="@Model.SelectedAccommodationId" class="form-control" />
+        <input type="hidden" asp-for="SelectedAccommodationId" id="SelectedAccommodationId" />
 
-        <div class="row mt-4">
-            <div class="form-group">
-                <label asp-for="SelectedAccommodationName" class="control-label"></label>
-                <input disabled="disabled" asp-for="SelectedAccommodationName" class="form-control" />
-                <span asp-validation-for="SelectedAccommodationName" class="text-danger"></span>
-            </div>
+        <div class="form-group mt-3">
+            <label>Accommodation</label>
+            <input class="form-control" value="@Model.SelectedAccommodationName" disabled />
         </div>
 
-        <div class="row mt-4">
-            <div class="form-group">
-                <label asp-for="Nights" class="control-label"></label>
-                <input asp-for="Nights" type="number" min="1" class="form-control" />
-                <span asp-validation-for="Nights" class="text-danger"></span>
-            </div>
+        <div class="form-group mt-3">
+            <label asp-for="FromDate"></label>
+            <input asp-for="FromDate" id="FromDate" type="date" class="form-control" />
         </div>
 
-        <div class="row mt-4">
-            <button type="submit" class="btn btn-success">Add To Reservation Cart</button>
+        <div class="form-group mt-3">
+            <label asp-for="ToDate"></label>
+            <input asp-for="ToDate" id="ToDate" type="date" class="form-control" />
         </div>
+
+        <div class="mt-3">
+            <button type="button" class="btn btn-info" onclick="checkAvailability()">
+                Check Availability
+            </button>
+            <div id="availabilityResult" class="mt-2"></div>
+        </div>
+
+        <button type="submit" class="btn btn-success mt-3">
+            Add To Reservation Cart
+        </button>
     </form>
+
+    <hr />
+
+    <h4>Availability Calendar</h4>
+    <div id="calendar"></div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const accId = document.getElementById("SelectedAccommodationId").value;
+
+        const calendar = new FullCalendar.Calendar(
+            document.getElementById('calendar'),
+            {
+                initialView: 'dayGridMonth',
+                height: 500,
+                selectable: false,
+                events: `/Accommodations/Calendar?id=${accId}`,
+                eventColor: '#dc3545',
+                eventTextColor: '#fff'
+            }
+        );
+
+        calendar.render();
+    });
+
+        function checkAvailability() {
+
+        const accId = document.getElementById("SelectedAccommodationId").value;
+        const from = document.getElementById("FromDate").value;
+        const to = document.getElementById("ToDate").value;
+
+        fetch('/Accommodations/CheckAvailability', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'RequestVerificationToken':
+                    document.querySelector('input[name="__RequestVerificationToken"]').value
+            },
+            body: `accommodationId=${encodeURIComponent(accId)}&from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            const resultDiv = document.getElementById("availabilityResult");
+            if (data.available) {
+                resultDiv.innerHTML = "<span class='text-success'>Available ✅</span>";
+            } else {
+                resultDiv.innerHTML = "<span class='text-danger'>Not available ❌</span>";
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            document.getElementById("availabilityResult").innerHTML = "<span class='text-danger'>Error checking availability</span>";
+        });
+    }
+</script>

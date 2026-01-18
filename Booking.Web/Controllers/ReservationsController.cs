@@ -49,5 +49,12 @@ namespace Booking.Web.Controllers
             return View(res);
         }
 
+        public IActionResult Cancel(Guid id)
+        {
+            _reservationService.CancelReservation(id);
+            return RedirectToAction(nameof(Index));
+        }
+
+
     }
 }

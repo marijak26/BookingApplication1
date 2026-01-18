@@ -13,8 +13,9 @@ namespace Booking.Service.Interface
         ReservationCart GetOrCreateCartForUser(Guid userId);
         ReservationCartDTO GetByUserIdWithIncludedAccommodations(Guid userId);
         void DeleteAccommodationFromReservationCart(Guid accommodationInCartId);
-        bool ConfirmReservation(Guid userId);
-        bool CancelReservation(Guid userId);
+        ReservationResultDTO ConfirmReservation(Guid cartItemId, Guid userId);
+        ReservationResultDTO ConfirmWholeCart(Guid userId);
+        void ClearCart(Guid userId);
 
     }
 

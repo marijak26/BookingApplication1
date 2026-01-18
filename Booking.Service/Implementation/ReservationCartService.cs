@@ -17,19 +17,22 @@ namespace Booking.Service.Implementation
         private readonly IRepository<Reservation> _reservationRepository;
         private readonly IRepository<AccommodationInReservation> _accommodationInReservationRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IAvailabilityService _availabilityService;
 
         public ReservationCartService(
             IRepository<ReservationCart> reservationCartRepository,
             IRepository<AccommodationInReservationCart> accommodationInCartRepository,
             IRepository<Reservation> reservationRepository,
             IRepository<AccommodationInReservation> accommodationInReservationRepository,
-            IUserRepository userRepository)
+            IUserRepository userRepository,
+            IAvailabilityService availabilityService)
         {
             _reservationCartRepository = reservationCartRepository;
             _accommodationInCartRepository = accommodationInCartRepository;
             _reservationRepository = reservationRepository;
             _accommodationInReservationRepository = accommodationInReservationRepository;
             _userRepository = userRepository;
+            _availabilityService = availabilityService;
         }
 
         public ReservationCart GetOrCreateCartForUser(Guid userId)
@@ -88,74 +91,142 @@ namespace Booking.Service.Implementation
             _accommodationInCartRepository.Delete(item);
         }
 
-        public bool ConfirmReservation(Guid userId)
+        public ReservationResultDTO ConfirmReservation(Guid cartItemId, Guid userId)
         {
-            var cart = _reservationCartRepository.Get(
-                selector: x => x,
-                predicate: x => x.UserId.Equals(userId.ToString()),
-                include: x => x.Include(z => z.Accommodations)
-                               .ThenInclude(z => z.Accommodation)
+            var cartItem = _accommodationInCartRepository.Get(
+                x => x,
+                x => x.Id == cartItemId,
+                include: x => x.Include(a => a.Accommodation)
             );
 
-            if (cart == null || cart.Accommodations == null || !cart.Accommodations.Any())
-                throw new Exception("Cart is empty or does not exist.");
+            if (cartItem == null)
+                return new ReservationResultDTO { Success = false, Message = "Item not found" };
 
-            var user = _userRepository.GetUserById(userId.ToString());
-            if (user == null)
-                throw new Exception("User not found");
+            if (!_availabilityService.IsAccommodationAvailable(
+                    cartItem.AccommodationId,
+                    cartItem.FromDate,
+                    cartItem.ToDate))
+            {
+                return new ReservationResultDTO
+                {
+                    Success = false,
+                    Message = $"Accommodation {cartItem.Accommodation.Name} is no longer available for the selected dates"
+                };
+            }
+
+            int nights = (cartItem.ToDate - cartItem.FromDate).Days;
+            double totalPrice = nights * cartItem.Accommodation.PricePerNight;
 
             var reservation = new Reservation
             {
                 Id = Guid.NewGuid(),
-                UserId = user.Id,
-                User = user,
-                Status = ReservationStatus.Confirmed
+                UserId = userId.ToString(),
+                Status = ReservationStatus.Confirmed,
+                TotalPrice = totalPrice
             };
 
             _reservationRepository.Insert(reservation);
 
-            foreach (var item in cart.Accommodations)
-            {
-                var reservationItem = new AccommodationInReservation
+            _accommodationInReservationRepository.Insert(
+                new AccommodationInReservation
                 {
                     Id = Guid.NewGuid(),
                     ReservationId = reservation.Id,
-                    Reservation = reservation,
-                    AccommodationId = item.AccommodationId,
-                    Accommodation = item.Accommodation,
-                    Nights = item.Nights
-                };
+                    AccommodationId = cartItem.AccommodationId,
+                    FromDate = cartItem.FromDate,
+                    ToDate = cartItem.ToDate
+                });
 
-                _accommodationInReservationRepository.Insert(reservationItem);
+            _accommodationInCartRepository.Delete(cartItem);
+
+            return new ReservationResultDTO
+            {
+                Success = true,
+                Message = "Reservation confirmed",
+                ReservationId = reservation.Id
+            };
+        }
+
+
+
+        public ReservationResultDTO ConfirmWholeCart(Guid userId)
+        {
+            var cart = _reservationCartRepository.Get(
+                selector: x => x,
+                predicate: x => x.UserId == userId.ToString(),
+                include: x => x.Include(c => c.Accommodations)
+                               .ThenInclude(a => a.Accommodation)
+            );
+
+            if (cart == null || !cart.Accommodations.Any())
+                return new ReservationResultDTO { Success = false, Message = "Cart is empty" };
+
+            var unavailableItems = cart.Accommodations
+                .Where(i => !_availabilityService.IsAccommodationAvailable(i.AccommodationId, i.FromDate, i.ToDate))
+                .ToList();
+
+            if (unavailableItems.Any())
+            {
+                string names = string.Join(", ", unavailableItems.Select(i => i.Accommodation.Name));
+                return new ReservationResultDTO
+                {
+                    Success = false,
+                    Message = $"These accommodations are no longer available: {names}"
+                };
             }
 
-            reservation.TotalPrice = cart.Accommodations.Sum(x => x.Nights * x.Accommodation.PricePerNight);
-            _reservationRepository.Update(reservation);
+            double totalPrice = 0;
+            var reservation = new Reservation
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId.ToString(),
+                Status = ReservationStatus.Confirmed,
+                AccommodationInReservations = new List<AccommodationInReservation>()
+            };
+
+            foreach (var item in cart.Accommodations)
+            {
+                int nights = (item.ToDate - item.FromDate).Days;
+                totalPrice += nights * item.Accommodation.PricePerNight;
+
+                reservation.AccommodationInReservations.Add(new AccommodationInReservation
+                {
+                    Id = Guid.NewGuid(),
+                    AccommodationId = item.AccommodationId,
+                    FromDate = item.FromDate,
+                    ToDate = item.ToDate
+                });
+            }
+
+            reservation.TotalPrice = totalPrice;
+            _reservationRepository.Insert(reservation);
 
             cart.Accommodations.Clear();
             _reservationCartRepository.Update(cart);
 
-            return true;
+            return new ReservationResultDTO
+            {
+                Success = true,
+                Message = "All accommodations successfully reserved",
+                ReservationId = reservation.Id
+            };
         }
 
-        public bool CancelReservation(Guid userId)
+
+        public void ClearCart(Guid userId)
         {
-            var reservation = _reservationRepository.Get(
+            var cart = _reservationCartRepository.Get(
                 selector: x => x,
-                predicate: x => x.UserId == userId.ToString()
-                             && x.Status == ReservationStatus.Confirmed
+                predicate: x => x.UserId == userId.ToString(),
+                include: x => x.Include(z => z.Accommodations)
             );
 
-            if (reservation == null)
-                return false;
+            if (cart == null)
+                return;
 
-            reservation.Status = ReservationStatus.Cancelled;
-            _reservationRepository.Update(reservation);
-
-            return true;
+            cart.Accommodations.Clear();
+            _reservationCartRepository.Update(cart);
         }
-
-
 
     }
 }

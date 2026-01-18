@@ -1,35 +1,122 @@
 ﻿@model Booking.Domain.DTO.ReservationCartDTO
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Your Reservation Cart";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<h2>Your Reservation Cart</h2>
 
-<table class="table">
-    <tr>
-        <th>Name</th>
-        <th>Nights</th>
-        <th>Price</th>
-        <th></th>
-    </tr>
-    @foreach (var item in Model.Accommodations)
-    {
-        <tr>
-            <td>@item.Accommodation.Name</td>
-            <td>@item.Nights</td>
-            <td>@(item.Nights* item.Accommodation.PricePerNight)</td>
-            <td>
-                <a asp-action="Delete" asp-route-id="@item.Id">Remove</a>
-            </td>
-        </tr>
+<div class="container mt-5">
+    <h2 class="mb-4">Your Reservation Cart</h2>
+
+    @{
+        var successMessage = TempData["Success"] as string;
+        var errorMessage = TempData["Error"] as string;
+
+        TempData.Remove("Success");
+        TempData.Remove("Error");
     }
-</table>
 
-<h3>Total: @Model.TotalPrice</h3>
+    @if (!string.IsNullOrEmpty(successMessage))
+    {
+        <div class="alert alert-success">
+            @successMessage
+        </div>
+    }
 
-@if (Model.Accommodations != null && Model.Accommodations.Any())
-{
-    <a asp-action="Confirm" class="btn btn-success">Confirm Reservation</a>
-    <a asp-action="Cancel" class="btn btn-warning">Cancel Reservation</a>
-}
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-danger">
+            @errorMessage
+        </div>
+    }
+
+
+    @if (Model.Accommodations == null || !Model.Accommodations.Any())
+    {
+        <div class="alert alert-info">
+            Your reservation cart is empty.
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <!-- LEFT: CART ITEMS -->
+            <div class="col-md-8">
+                @foreach (var item in Model.Accommodations)
+                {
+                    var totalPrice = item.Nights * item.Accommodation.PricePerNight;
+
+                    <div class="card mb-3 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">@item.Accommodation.Name</h5>
+                            <p class="mb-1"><strong>Nights:</strong> @item.Nights</p>
+                            <p class="mb-1"><strong>Price per night:</strong> €@item.Accommodation.PricePerNight</p>
+                            <p class="fw-bold text-success">Total: €@totalPrice</p>
+
+                            <div class="d-flex gap-2">
+                                <!-- CONFIRM SINGLE -->
+                                <form asp-action="Confirm" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="cartItemId" value="@item.Id" />
+                                    <button type="submit" class="btn btn-success btn-sm">
+                                        Confirm
+                                    </button>
+                                </form>
+
+                                <!-- CONFIRM WHOLE CART -->
+                                <form asp-action="ConfirmCart" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <button class="btn btn-primary btn-sm">Confirm All Reservations</button>
+                                </form>
+
+                                <!-- REMOVE -->
+                                <a asp-action="Delete"
+                                   asp-route-id="@item.Id"
+                                   class="btn btn-danger btn-sm"
+                                   onclick="return confirm('Remove this item?');">
+                                    Remove
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- RIGHT: SUMMARY -->
+            <div class="col-md-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Summary</h5>
+                        <p>Total reservations: <strong>@Model.Accommodations.Count()</strong></p>
+                        <p>
+                            Total price: <strong class="text-success">
+                                €
+                                @Model.Accommodations.Sum(a => a.Nights * a.Accommodation.PricePerNight)
+                            </strong>
+                        </p>
+                        <hr />
+                        <!-- CLEAR CART -->
+                        <form asp-action="Clear" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-warning w-100"
+                                    onclick="return confirm('Clear entire cart?');">
+                                Clear Cart
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="mt-4 d-flex justify-content-between">
+        <a asp-action="Index" asp-controller="Accommodations" class="btn btn-secondary">
+            ← Back to Accommodations
+        </a>
+        <a asp-action="Index" asp-controller="Reservations" class="btn btn-secondary">
+            → Go to My Reservations
+        </a>
+    </div>
+
+   
+</div>
