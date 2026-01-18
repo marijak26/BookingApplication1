@@ -56,11 +56,51 @@ namespace AdminApplication.Controllers
 
             return View(result);
         }
-
-        public IActionResult Privacy()
+        [HttpGet]
+        public async Task<IActionResult> AssignRole()
         {
-            return View();
+            using var client = new HttpClient(new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+            });
+
+            string URL = "http://localhost:5087/api/Admin/GetAllUsers";
+            var response = await client.GetAsync(URL);
+
+            var users = await response.Content.ReadFromJsonAsync<List<BookingApplicationUserDTO>>();
+
+            return View(users);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AssignRole(BookingApplicationUserDTO model)
+        {
+            if (model == null)
+            {
+                TempData["Error"] = "Invalid user data.";
+                return RedirectToAction("AssignRole");
+            }
+
+            using var client = new HttpClient(new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (_, _, _, _) => true
+            });
+
+            var response = await client.PostAsJsonAsync("http://localhost:5087/api/Admin/AssignRole", model);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                TempData["Error"] = "Failed to assign role.";
+            }
+            else
+            {
+                TempData["Success"] = "Role assigned successfully.";
+            }
+
+            return RedirectToAction("AssignRole");
+        }
+
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

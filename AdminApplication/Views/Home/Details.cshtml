@@ -56,14 +56,4 @@
 
 <div class="mt-4">
     <a asp-action="Index" class="btn btn-secondary">← Back to Reservations</a>
-
-    @if (Model.Status == ReservationStatus.Confirmed)
-    {
-        <a asp-action="Cancel"
-           asp-route-id="@Model.Id"
-           class="btn btn-danger ms-2"
-           onclick="return confirm('Cancel this reservation?');">
-            Cancel Reservation
-        </a>
-    }
 </div>

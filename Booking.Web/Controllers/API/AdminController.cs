@@ -32,54 +32,46 @@ namespace Booking.Web.Controllers.API
             return _reservationService.GetReservation(model.Id);
         }
 
-        [HttpPost("[action]")]
-        public bool ImportAllUsers(List<UserRegistrationDto> model)
+        [HttpGet("[action]")]
+        public async Task<IActionResult> GetAllUsers()
         {
-            bool status = true;
+            var users = _userManager.Users.ToList();
+            var userList = new List<BookingApplicationUserDTO>();
 
-            foreach (var item in model)
+            foreach (var user in users)
             {
-                var userCheck = _userManager.FindByEmailAsync(item.Email).Result;
-                if (userCheck == null)
+                var roles = await _userManager.GetRolesAsync(user);
+                userList.Add(new BookingApplicationUserDTO
                 {
-                    var user = new BookingApplicationUser
-                    {
-                        FirstName = "Test Name",
-                        LastName = "Test LastName",
-                        UserName = item.Email,
-                        NormalizedUserName = item.Email.ToUpper(),
-                        Email = item.Email,
-                        EmailConfirmed = true,
-                        PhoneNumberConfirmed = true,
-                        PhoneNumber = "",
-                        ReservationCart = new ReservationCart()
-                    };
-
-                    var result = _userManager.CreateAsync(user, item.Password).Result;
-
-                    if (result.Succeeded)
-                    {
-                        _userManager.AddToRoleAsync(user, "User").Wait();
-                    }
-
-                    status = status & result.Succeeded;
-                }
+                    Id = Guid.Parse(user.Id),
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    Email = user.Email,
+                    RoleName = roles.FirstOrDefault() ?? "User"
+                });
             }
 
-            return status;
+            return Ok(userList);
         }
 
+
         [HttpPost("[action]")]
-        public bool AssignRole(AssignRoleDto model)
+        public bool AssignRole(BookingApplicationUserDTO model)
         {
-            var user = _userManager.FindByIdAsync(model.UserId.ToString()).Result;
+            if (model == null || model.Id == Guid.Empty || string.IsNullOrEmpty(model.RoleName))
+                return false;
+
+            var user = _userManager.FindByIdAsync(model.Id.ToString()).Result;
             if (user == null) return false;
 
             var currentRoles = _userManager.GetRolesAsync(user).Result;
-            _userManager.RemoveFromRolesAsync(user, currentRoles).Wait();
+            if (currentRoles.Any())
+                _userManager.RemoveFromRolesAsync(user, currentRoles).Wait();
 
             var result = _userManager.AddToRoleAsync(user, model.RoleName).Result;
+
             return result.Succeeded;
         }
+
     }
 }
