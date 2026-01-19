@@ -11,10 +11,10 @@ namespace Booking.Domain.DomainModels
 {
     public class Reservation : BaseEntity
     {
-        public string? UserId { get; set; }
+        public string UserId { get; set; }
 
         [Display(Name = "User's Full Name")]
-        public BookingApplicationUser? User { get; set; }
+        public BookingApplicationUser User { get; set; }
 
         [Display(Name = "Total Price")]
         public double TotalPrice { get; set; }
@@ -22,7 +22,7 @@ namespace Booking.Domain.DomainModels
         [Display(Name = "Reservation Status")]
         public ReservationStatus Status { get; set; } = ReservationStatus.Confirmed;
 
-        public virtual ICollection<AccommodationInReservation>? AccommodationInReservations { get; set; }
+        public virtual ICollection<AccommodationInReservation> AccommodationInReservations { get; set; }
 
 
     }

@@ -73,5 +73,17 @@ namespace Booking.Web.Controllers.API
             return result.Succeeded;
         }
 
+        [HttpGet("[action]")]
+        public async Task<string> GetUserRole(Guid id)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user == null)
+                return "Unknown";
+
+            var roles = await _userManager.GetRolesAsync(user);
+            return roles.FirstOrDefault() ?? "User";
+        }
+
+
     }
 }

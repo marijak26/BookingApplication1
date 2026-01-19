@@ -9,9 +9,11 @@
 <hr />
 
 <div class="mb-3">
-    <strong>User:</strong> @Model.User.FirstName @Model.User.LastName - @Model.User.Email
+    <strong>Full Name</strong> @Model.User.FirstName @Model.User.LastName
 </div>
-
+<div class="mb-3">
+    <strong>Email</strong> @Model.User.Email
+</div>
 <div class="mb-3">
     <strong>Status:</strong>
     @if (Model.Status == ReservationStatus.Confirmed)

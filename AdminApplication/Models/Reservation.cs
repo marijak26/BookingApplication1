@@ -4,7 +4,7 @@
     {
         public string? UserId { get; set; }
 
-        public BookingApplicationUser? User { get; set; }
+        public BookingApplicationUserDTO? User { get; set; }
 
         public double TotalPrice { get; set; }
 
