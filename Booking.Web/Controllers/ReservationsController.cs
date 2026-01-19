@@ -33,9 +33,13 @@ namespace Booking.Web.Controllers
             if (!string.IsNullOrEmpty(status))
             {
                 if (status == "active")
+                {
                     reservations = reservations.Where(r => r.Status == ReservationStatus.Confirmed).ToList();
+                }
                 else if (status == "cancelled")
+                {
                     reservations = reservations.Where(r => r.Status == ReservationStatus.Cancelled).ToList();
+                }
             }
 
             return View(reservations);
@@ -43,12 +47,12 @@ namespace Booking.Web.Controllers
 
         public IActionResult Details(Guid id)
         {
-            var res = _reservationService.GetReservation(id);
-            if (res == null)
+            var reservation = _reservationService.GetReservation(id);
+            if (reservation == null)
             {
                 return NotFound();
             }
-            return View(res);
+            return View(reservation);
         }
 
         public IActionResult Cancel(Guid id)
@@ -56,7 +60,5 @@ namespace Booking.Web.Controllers
             _reservationService.CancelReservation(id);
             return RedirectToAction(nameof(Index));
         }
-
-
     }
 }

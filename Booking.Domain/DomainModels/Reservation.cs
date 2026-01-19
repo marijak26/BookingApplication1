@@ -23,7 +23,5 @@ namespace Booking.Domain.DomainModels
         public ReservationStatus Status { get; set; } = ReservationStatus.Confirmed;
 
         public virtual ICollection<AccommodationInReservation> AccommodationInReservations { get; set; }
-
-
     }
 }

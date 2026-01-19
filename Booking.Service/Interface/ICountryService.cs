@@ -13,6 +13,5 @@ namespace Booking.Service.Interface
         List<Country> GetAllCountriesFromDb();
         void SeedCountries(List<Country> countries);
         Country? GetById(Guid id);
-
     }
 }

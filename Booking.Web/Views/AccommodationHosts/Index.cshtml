@@ -11,11 +11,10 @@
         @if (User.IsInRole("Admin"))
         {
             <a asp-action="Create" class="btn btn-success">
-                + Create New
+                Create New
             </a>
         }
     </div>
-
 
     <div class="row">
         @foreach (var item in Model)

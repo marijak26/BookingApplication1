@@ -12,18 +12,14 @@ namespace Booking.Service.Interface
     {
         List<Accommodation> GetAll();
         List<AccommodationHost> GetAllHosts();
-
         Accommodation? GetById(Guid id);
         Accommodation Insert(Accommodation accommodation);
         Accommodation Update(Accommodation accommodation);
         Accommodation DeleteById(Guid id);
-
         AddToReservationCartDTO GetSelectedAccommodation(Guid id);
         ReservationResultDTO AddAccommodationToReservationCart(Guid accommodationId, Guid userId, DateTime fromDate,DateTime toDate);
         List<Accommodation> GetByCountry(Guid countryId);
         bool IsAccommodationAvailable(Guid accommodationId, DateTime from, DateTime to);
         List<CalendarEventDTO> GetAccommodationCalendar(Guid accommodationId);
-
     }
-
 }

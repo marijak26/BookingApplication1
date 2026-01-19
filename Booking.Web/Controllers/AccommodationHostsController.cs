@@ -36,10 +36,15 @@ namespace Booking.Web.Controllers
         // GET: AccommodationHosts/Details/5
         public IActionResult Details(Guid? id)
         {
-            if (id == null) return NotFound();
+            if (id == null) { 
+                return NotFound(); 
+            }
 
             var host = _hostService.GetById(id.Value);
-            if (host == null) return NotFound();
+            if (host == null)
+            {
+                return NotFound();
+            }
 
             return View(host);
         }
@@ -58,7 +63,7 @@ namespace Booking.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([Bind("FullName,ContactEmail,CountryId,Id")] AccommodationHost accommodationHost)
+        public IActionResult Create([Bind("FullName,ContactEmail,CountryId,Id")] AccommodationHost accommodationHost)
         {
             if (!ModelState.IsValid)
             {
@@ -74,10 +79,16 @@ namespace Booking.Web.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult Edit(Guid? id)
         {
-            if (id == null) return NotFound();
+            if (id == null) 
+            { 
+                return NotFound(); 
+            }
 
             var host = _hostService.GetById(id.Value);
-            if (host == null) return NotFound();
+            if (host == null)
+            {
+                return NotFound();
+            }
 
             LoadCountriesDropdown(host.CountryId);
             return View(host);
@@ -91,7 +102,10 @@ namespace Booking.Web.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult Edit(Guid id, [Bind("FullName,ContactEmail,CountryId,Id")] AccommodationHost accommodationHost)
         {
-            if (id != accommodationHost.Id) return NotFound();
+            if (id != accommodationHost.Id)
+            {
+                return NotFound();
+            }
 
             if (!ModelState.IsValid)
             {
@@ -107,10 +121,16 @@ namespace Booking.Web.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult Delete(Guid? id)
         {
-            if (id == null) return NotFound();
+            if (id == null)
+            {
+                return NotFound();
+            }
 
             var host = _hostService.GetById(id.Value);
-            if (host == null) return NotFound();
+            if (host == null)
+            {
+                return NotFound();
+            }
 
             return View(host);
         }
@@ -119,7 +139,7 @@ namespace Booking.Web.Controllers
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        public IActionResult DeleteConfirmed(Guid id)
         {
             _hostService.Delete(id);
             return RedirectToAction(nameof(Index));

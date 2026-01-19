@@ -15,7 +15,6 @@
             @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <!-- Hidden Id -->
             <input type="hidden" asp-for="Id" />
 
             <div class="form-group">
@@ -31,7 +30,7 @@
             </div>
 
             <div class="form-group">
-                <label asp-for="PricePerNight" class="control-label"></label>
+                <label asp-for="PricePerNight" class="control-label">Price Per Night</label>
                 <input asp-for="PricePerNight" class="form-control" />
                 <span asp-validation-for="PricePerNight" class="text-danger"></span>
             </div>
@@ -41,19 +40,16 @@
                 <label class="form-check-label">@Html.DisplayNameFor(model => model.IsRented)</label>
             </div>
 
-            <!-- Current Image -->
             <div class="form-group">
                 <label>Current Image</label><br />
                 <img src="@Model.ImageUrl" alt="@Model.Name" class="img-fluid mb-2" style="max-width:200px;" />
             </div>
 
-            <!-- Upload new Image -->
             <div class="form-group">
                 <label>Change Image</label>
                 <input type="file" name="Image" class="form-control" />
             </div>
 
-            <!-- Category dropdown -->
             <div class="form-group">
                 <label asp-for="Category"></label>
                 <select asp-for="Category" class="form-control" asp-items="@(ViewData["Category"] as IEnumerable<SelectListItem>)">
@@ -62,9 +58,8 @@
                 <span asp-validation-for="Category" class="text-danger"></span>
             </div>
 
-            <!-- Host dropdown -->
             <div class="form-group">
-                <label asp-for="HostId"></label>
+                <label asp-for="HostId">Host</label>
                 <select asp-for="HostId" class="form-control" asp-items="@(ViewData["HostId"] as SelectList)">
                     <option value="">-- Select Host --</option>
                 </select>
@@ -79,7 +74,7 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index" class="btn btn-secondary mt-1">← Back to List</a>
 </div>
 
 @section Scripts {

@@ -13,21 +13,17 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// --- MVC & Razor Pages ---
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-// --- HTTP Client ---
 builder.Services.AddHttpClient();
 
-// --- Session ---
 builder.Services.AddSession(options =>
 {
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
 
-// --- JWT Authentication ---
 var secretKey = builder.Configuration["Jwt:Key"];
 var keyBytes = Encoding.UTF8.GetBytes(secretKey);
 
@@ -48,7 +44,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// --- CORS (allow API calls to BookingApplication1) ---
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBookingAPI",

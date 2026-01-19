@@ -33,7 +33,6 @@ namespace Booking.Service.Implementation
             var apiCountries = JsonSerializer.Deserialize<List<CountryApiDTO>>(json,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-            // 🔁 ТРАНСФОРМАЦИЈА
             return apiCountries
                 .Where(x => !string.IsNullOrEmpty(x.name.common))
                 .Select(x => new Country
@@ -63,13 +62,14 @@ namespace Booking.Service.Implementation
 
         public List<Country> GetAllCountriesFromDb()
         {
-            return _countryRepository.GetAll(x => x).ToList();
+            return _countryRepository.GetAll(selector: x => x).ToList();
         }
 
         public Country? GetById(Guid id)
         {
-            return _countryRepository.Get(x => x, x => x.Id == id);
+            return _countryRepository.Get(
+                selector: x => x, 
+                predicate: x => x.Id == id);
         }
-
     }
 }

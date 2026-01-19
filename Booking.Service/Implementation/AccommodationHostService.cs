@@ -23,8 +23,8 @@ namespace Booking.Service.Implementation
         {
             return _hostRepository.GetAll(
                 selector: x => x,
-                include: x => x.Include(h => h.Country)
-            ).ToList();
+                include: x => x.Include(h => h.Country))
+                .ToList();
         }
 
         public AccommodationHost GetById(Guid id)
@@ -32,8 +32,7 @@ namespace Booking.Service.Implementation
             return _hostRepository.Get(
                 selector: x => x,
                 predicate: x => x.Id == id,
-                include: x => x.Include(h => h.Country)
-            );
+                include: x => x.Include(h => h.Country));
         }
 
         public void Create(AccommodationHost host)

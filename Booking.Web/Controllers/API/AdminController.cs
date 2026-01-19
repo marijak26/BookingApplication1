@@ -13,6 +13,7 @@ namespace Booking.Web.Controllers.API
     {
         private readonly UserManager<BookingApplicationUser> _userManager;
         private readonly IReservationService _reservationService;
+
         public AdminController(UserManager<BookingApplicationUser> userManager, IReservationService reservationService)
         {
             _userManager = userManager;
@@ -20,7 +21,6 @@ namespace Booking.Web.Controllers.API
         }
 
         [HttpGet("[action]")]
-
         public List<Reservation> GetAllReservations()
         {
             return _reservationService.GetAllReservations();
@@ -50,23 +50,28 @@ namespace Booking.Web.Controllers.API
                     RoleName = roles.FirstOrDefault() ?? "User"
                 });
             }
-
             return Ok(userList);
         }
-
 
         [HttpPost("[action]")]
         public bool AssignRole(BookingApplicationUserDTO model)
         {
             if (model == null || model.Id == Guid.Empty || string.IsNullOrEmpty(model.RoleName))
+            {
                 return false;
+            }
 
             var user = _userManager.FindByIdAsync(model.Id.ToString()).Result;
-            if (user == null) return false;
+            if (user == null) 
+            { 
+                return false; 
+            }
 
             var currentRoles = _userManager.GetRolesAsync(user).Result;
             if (currentRoles.Any())
+            {
                 _userManager.RemoveFromRolesAsync(user, currentRoles).Wait();
+            }
 
             var result = _userManager.AddToRoleAsync(user, model.RoleName).Result;
 
@@ -78,12 +83,12 @@ namespace Booking.Web.Controllers.API
         {
             var user = await _userManager.FindByIdAsync(id.ToString());
             if (user == null)
+            {
                 return "Unknown";
+            }
 
             var roles = await _userManager.GetRolesAsync(user);
             return roles.FirstOrDefault() ?? "User";
         }
-
-
     }
 }

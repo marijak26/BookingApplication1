@@ -14,7 +14,7 @@ namespace Booking.Service.Implementation
         private readonly IRepository<Accommodation> _accommodationRepository;
         private readonly IRepository<AccommodationInReservationCart> _accommodationInCartRepository;
         private readonly IReservationCartService _reservationCartService;
-        private readonly IRepository<AccommodationHost> _accommodationHostRepository;
+        private readonly IAccommodationHostService _accommodationHostService;
         private readonly IRepository<AccommodationInReservation> _accommodationInReservationRepository;
 
 
@@ -22,28 +22,28 @@ namespace Booking.Service.Implementation
             IRepository<Accommodation> accommodationRepository,
             IRepository<AccommodationInReservationCart> accommodationInCartRepository,
             IReservationCartService reservationCartService,
-            IRepository<AccommodationHost> accommodationHostRepository,
+            IAccommodationHostService accommodationHostService,
             IRepository<AccommodationInReservation> accommodationInReservationRepository)
         {
             _accommodationRepository = accommodationRepository;
             _accommodationInCartRepository = accommodationInCartRepository;
             _reservationCartService = reservationCartService;
-            _accommodationHostRepository = accommodationHostRepository;
+            _accommodationHostService = accommodationHostService;
             _accommodationInReservationRepository = accommodationInReservationRepository;
         }
 
         public List<Accommodation> GetAll()
         {
             return _accommodationRepository.GetAll(
-        selector: x => x,
-        include: x => x.Include(a => a.Host)
+                selector: x => x,
+                include: x => x.Include(a => a.Host)
                        .ThenInclude(h => h.Country))
                 .ToList();
         }
 
         public List<AccommodationHost> GetAllHosts()
         {
-            return _accommodationHostRepository.GetAll(x => x).ToList();
+            return _accommodationHostService.GetAll();
         }
 
         public Accommodation? GetById(Guid id)
@@ -52,10 +52,8 @@ namespace Booking.Service.Implementation
                 selector: x => x,
                 include: x => x.Include(a => a.Host)
                                .ThenInclude(h => h.Country),
-                predicate: x => x.Id.Equals(id)
-            );
+                predicate: x => x.Id.Equals(id));
         }
-
 
         public Accommodation Insert(Accommodation accommodation)
         {
@@ -71,8 +69,11 @@ namespace Booking.Service.Implementation
         public Accommodation DeleteById(Guid id)
         {
             var accommodation = GetById(id);
+
             if (accommodation == null)
-                throw new Exception("Accommodation not found");
+            {
+            throw new Exception("Accommodation not found");
+            }
 
             _accommodationRepository.Delete(accommodation);
             return accommodation;
@@ -81,8 +82,11 @@ namespace Booking.Service.Implementation
         public AddToReservationCartDTO GetSelectedAccommodation(Guid id)
         {
             var accommodation = GetById(id);
+
             if (accommodation == null)
+            {
                 throw new Exception("Accommodation not found");
+            }
 
             var fromDate = DateTime.Today.AddDays(1);
             var toDate = fromDate.AddDays(1);
@@ -96,14 +100,17 @@ namespace Booking.Service.Implementation
             };
         }
 
-
         public ReservationResultDTO AddAccommodationToReservationCart(Guid accommodationId, Guid userId, DateTime fromDate, DateTime toDate)
         {
             if (fromDate >= toDate)
+            {
                 return new ReservationResultDTO { Success = false, Message = "Invalid dates" };
+            }
 
             if (!IsAccommodationAvailable(accommodationId, fromDate, toDate))
-                return new ReservationResultDTO { Success = false, Message = "Accommodation is not available for selected dates" };
+            {
+                return new ReservationResultDTO { Success = false, Message = "Accommodation is not available for the selected dates" };
+            }
 
             var cart = _reservationCartService.GetOrCreateCartForUser(userId);
 
@@ -121,23 +128,22 @@ namespace Booking.Service.Implementation
             return new ReservationResultDTO { Success = true, Message = "Accommodation added to cart" };
         }
 
-
-
-
         public List<Accommodation> GetByCountry(Guid countryId)
         {
             return _accommodationRepository.GetAll(
                 selector: x => x,
                 include: x => x.Include(a => a.Host)
                                .ThenInclude(h => h.Country),
-                predicate: x => x.Host.CountryId == countryId
-            ).ToList();
+                predicate: x => x.Host.CountryId == countryId)
+                .ToList();
         }
 
         public bool IsAccommodationAvailable(Guid accommodationId, DateTime from, DateTime to)
         {
             if (from >= to)
+            {
                 return false;
+            }
 
             var hasReservationConflict = _accommodationInReservationRepository
                 .GetAll(
@@ -145,11 +151,13 @@ namespace Booking.Service.Implementation
                     predicate: x =>
                         x.AccommodationId == accommodationId &&
                         x.FromDate < to &&
-                        x.ToDate > from
-                ).Any();
+                        x.ToDate > from)
+                .Any();
 
             if (hasReservationConflict)
+            {
                 return false;
+            }
 
             var hasCartConflict = _accommodationInCartRepository
                 .GetAll(
@@ -157,8 +165,8 @@ namespace Booking.Service.Implementation
                     predicate: x =>
                         x.AccommodationId == accommodationId &&
                         x.FromDate < to &&
-                        x.ToDate > from
-                ).Any();
+                        x.ToDate > from)
+                .Any();
 
             return !hasCartConflict;
         }
@@ -168,18 +176,15 @@ namespace Booking.Service.Implementation
             var reservations = _accommodationInReservationRepository
                 .GetAll(
                     selector: x => x,
-                    predicate: x => x.AccommodationId == accommodationId
-                ).ToList();
+                    predicate: x => x.AccommodationId == accommodationId)
+                .ToList();
 
             return reservations.Select(r => new CalendarEventDTO
             {
                 title = "Reserved",
                 start = r.FromDate.ToString("yyyy-MM-dd"),
-                end = r.ToDate.ToString("yyyy-MM-dd")
-            }).ToList();
-
+                end = r.ToDate.ToString("yyyy-MM-dd")})
+                .ToList();
         }
-
-
     }
 }

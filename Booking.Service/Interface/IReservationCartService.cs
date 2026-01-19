@@ -16,7 +16,5 @@ namespace Booking.Service.Interface
         ReservationResultDTO ConfirmReservation(Guid cartItemId, Guid userId);
         ReservationResultDTO ConfirmWholeCart(Guid userId);
         void ClearCart(Guid userId);
-
     }
-
 }

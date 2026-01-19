@@ -74,7 +74,6 @@ namespace Booking.Repository
                 .WithMany(rc => rc.Accommodations)
                 .HasForeignKey(ac => ac.ReservationCartId)
                 .OnDelete(DeleteBehavior.Cascade);
-
         }
     }
 }

@@ -29,7 +29,12 @@ namespace Booking.Web.Controllers.API
             {
                 var user = await _userManager.FindByEmailAsync(model.Email);
                 if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
-                    return Unauthorized(new { message = "Invalid credentials" });
+                {
+                    return Unauthorized(new 
+                    { 
+                        message = "Invalid credentials" 
+                    });
+                }
 
                 var roles = await _userManager.GetRolesAsync(user);
 
@@ -40,7 +45,9 @@ namespace Booking.Web.Controllers.API
                 };
 
                 foreach (var role in roles)
+                {
                     claims.Add(new Claim(ClaimTypes.Role, role));
+                }
 
                 var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
                 var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -51,11 +58,17 @@ namespace Booking.Web.Controllers.API
                     signingCredentials: creds
                 );
 
-                return Ok(new { token = new JwtSecurityTokenHandler().WriteToken(token) });
+                return Ok(new 
+                { 
+                    token = new JwtSecurityTokenHandler().WriteToken(token) 
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = ex.Message, stack = ex.StackTrace });
+                return StatusCode(500, new 
+                { 
+                    message = ex.Message, stack = ex.StackTrace 
+                });
             }
         }
     }

@@ -9,17 +9,16 @@
     <a asp-action="Index" asp-route-status="cancelled" class="btn btn-danger">Cancelled</a>
 </div>
 
-<table class="table">
+<table class="table table-bordered">
     <thead>
         <tr>
-            <th>User</th>
             <th>Accommodation</th>
-            <th>Check In Date </th>
-            <th>Check Out Date </th>
+            <th>Check-In Date </th>
+            <th>Check-Out Date </th>
             <th>Nights</th>
             <th>Total Price</th>
             <th>Status</th>
-            <th></th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -32,12 +31,7 @@
 
                 foreach (var acc in item.AccommodationInReservations)
                 {
-                    <tr style="@(item.Status == ReservationStatus.Cancelled ? "opacity:0.6" : "")">
-                        @if (first)
-                        {
-                            <td rowspan="@rowSpan">@item.User.FirstName @item.User.LastName</td>
-                        }
-
+                    <tr style="@(item.Status == ReservationStatus.Cancelled)">
                         <td>@acc.Accommodation?.Name</td>
                         <td>@acc.FromDate.ToString("dd/MM/yyyy")</td>
                         <td> @acc.ToDate.ToString("dd/MM/yyyy")</td>
@@ -59,12 +53,13 @@
                                 }
                             </td>
                             <td rowspan="@rowSpan">
-                                <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm">Details</a>
 
                                 @if (item.Status == ReservationStatus.Confirmed)
                                 {
                                     <span> | </span>
                                     <a asp-action="Cancel" asp-route-id="@item.Id"
+                                       class="btn btn-danger ms-2 btn-sm"
                                        onclick="return confirm('Cancel this reservation?');">
                                         Cancel
                                     </a>
@@ -77,7 +72,7 @@
             }
             else
             {
-                <tr style="@(item.Status == ReservationStatus.Cancelled ? "opacity:0.6" : "")">
+                <tr style="@(item.Status == ReservationStatus.Cancelled)">
                     <td>@item.User.FirstName @item.User.LastName</td>
                     <td>-</td>
                     <td>-</td>
@@ -95,11 +90,12 @@
                         }
                     </td>
                     <td>
-                        <a asp-action="Details" asp-route-id="@item.Id">Details</a>
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary btn-sm">Details</a>
                         @if (item.Status == ReservationStatus.Confirmed)
                         {
                             <span> | </span>
                             <a asp-action="Cancel" asp-route-id="@item.Id"
+                               class="btn btn-danger ms-2 btn-sm"
                                onclick="return confirm('Cancel this reservation?');">
                                 Cancel
                             </a>

@@ -18,7 +18,6 @@ namespace Booking.Web.Controllers
     {
         private readonly IReservationCartService _reservationCartService;
 
-
         public ReservationCartsController(IReservationCartService reservationCartService)
         {
             _reservationCartService = reservationCartService;
@@ -30,7 +29,6 @@ namespace Booking.Web.Controllers
             var model = _reservationCartService.GetByUserIdWithIncludedAccommodations(Guid.Parse(userId));
             return View(model);
         }
-
 
         public IActionResult Delete(Guid id)
         {
@@ -72,7 +70,6 @@ namespace Booking.Web.Controllers
             return RedirectToAction("Index");
         }
 
-
         [HttpPost]
         public IActionResult Clear()
         {
@@ -81,9 +78,5 @@ namespace Booking.Web.Controllers
 
             return RedirectToAction("Index");
         }
-
-
-
-
     }
 }

@@ -22,7 +22,6 @@ namespace Booking.Web.Controllers
         private readonly IAccommodationService _accommodationService;
         private readonly ICountryService _countryService;
 
-
         public AccommodationsController(IAccommodationService accommodationService, ICountryService countryService)
         {
             _accommodationService = accommodationService;
@@ -50,12 +49,12 @@ namespace Booking.Web.Controllers
         // GET: Accommodations/Details/5
         public IActionResult Details(Guid id)
         {
-            var acc = _accommodationService.GetById(id);
-            if (acc == null)
+            var accommodation = _accommodationService.GetById(id);
+            if (accommodation == null)
             {
                 return NotFound();
             }
-            return View(acc);
+            return View(accommodation);
         }
 
         // GET: Accommodations/Create
@@ -76,18 +75,13 @@ namespace Booking.Web.Controllers
             return View();
         }
 
-
-
-
         // POST: Accommodations/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public IActionResult Create([Bind("Name,Description,PricePerNight,IsRented,Category,HostId")]
-        Accommodation accommodation,
-        IFormFile Image)
+        public IActionResult Create([Bind("Name,Description,PricePerNight,IsRented,Category,HostId")] Accommodation accommodation, IFormFile Image)
         {
             if (!ModelState.IsValid)
             {
@@ -112,7 +106,9 @@ namespace Booking.Web.Controllers
                     "wwwroot/images/accommodations");
 
                 if (!Directory.Exists(uploadsFolder))
+                {
                     Directory.CreateDirectory(uploadsFolder);
+                }
 
                 var fileName = Guid.NewGuid() + Path.GetExtension(Image.FileName);
                 var filePath = Path.Combine(uploadsFolder, fileName);
@@ -134,9 +130,6 @@ namespace Booking.Web.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
-
-
 
         // GET: Accommodations/Edit/5
         [Authorize(Roles = "Admin")]
@@ -166,10 +159,7 @@ namespace Booking.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public IActionResult Edit(
-    Guid id,
-    [Bind("Id,Name,Description,PricePerNight,IsRented,Category,HostId")] Accommodation accommodation,
-    IFormFile Image)
+        public IActionResult Edit(Guid id, [Bind("Id,Name,Description,PricePerNight,IsRented,Category,HostId")] Accommodation accommodation, IFormFile Image)
         {
             if (id != accommodation.Id)
             {
@@ -228,17 +218,16 @@ namespace Booking.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-
         // GET: Accommodations/Delete/5
         [Authorize(Roles = "Admin")]
         public IActionResult Delete(Guid id)
         {
-            var acc = _accommodationService.GetById(id);
-            if (acc == null)
+            var accommodation = _accommodationService.GetById(id);
+            if (accommodation == null)
             {
                 return NotFound();
             }
-            return View(acc);
+            return View(accommodation);
         }
 
         // POST: Accommodations/Delete/5
@@ -273,16 +262,13 @@ namespace Booking.Web.Controllers
 
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim))
+            {
                 return Unauthorized();
+            }
 
             var userId = Guid.Parse(userIdClaim);
 
-            _accommodationService.AddAccommodationToReservationCart(
-                model.SelectedAccommodationId,
-                userId,
-                model.FromDate,
-                model.ToDate
-            );
+            _accommodationService.AddAccommodationToReservationCart(model.SelectedAccommodationId, userId, model.FromDate, model.ToDate);
 
             return RedirectToAction("Index", "ReservationCarts");
         }
@@ -290,12 +276,10 @@ namespace Booking.Web.Controllers
         [HttpPost]
         public IActionResult CheckAvailability(Guid accommodationId, DateTime from, DateTime to)
         {
-            var available = _accommodationService
-                .IsAccommodationAvailable(accommodationId, from, to);
+            var available = _accommodationService.IsAccommodationAvailable(accommodationId, from, to);
 
             return Json(new { available });
         }
-
 
         [HttpGet]
         public IActionResult Calendar(Guid id)
@@ -303,6 +287,5 @@ namespace Booking.Web.Controllers
             var events = _accommodationService.GetAccommodationCalendar(id);
             return Json(events);
         }
-
     }
 }

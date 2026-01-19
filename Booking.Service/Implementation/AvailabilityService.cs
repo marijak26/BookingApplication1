@@ -11,23 +11,21 @@ namespace Booking.Service.Implementation
 {
     public class AvailabilityService : IAvailabilityService
     {
-        private readonly IRepository<AccommodationInReservation> _reservationRepo;
+        private readonly IRepository<AccommodationInReservation> _accommodationInReservationRepository;
 
         public AvailabilityService(
-            IRepository<AccommodationInReservation> reservationRepo)
+            IRepository<AccommodationInReservation> accommodationInReservationRepository)
         {
-            _reservationRepo = reservationRepo;
+            _accommodationInReservationRepository = accommodationInReservationRepository;
         }
 
         public bool IsAccommodationAvailable(Guid accommodationId, DateTime from, DateTime to)
         {
-            return !_reservationRepo.GetAll(x => x)
-                .Any(r =>
-                    r.AccommodationId == accommodationId &&
-                    from < r.ToDate &&
-                    to > r.FromDate
-                );
+            return !_accommodationInReservationRepository
+                    .GetAll(selector: x => x)
+                    .Any(r => r.AccommodationId == accommodationId &&
+                        from < r.ToDate &&
+                        to > r.FromDate);
         }
     }
-
 }

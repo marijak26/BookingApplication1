@@ -14,5 +14,4 @@ namespace Booking.Service.Interface
         Reservation GetReservation(Guid id);
         void CancelReservation(Guid reservationId);
     }
-
 }

@@ -24,8 +24,8 @@ namespace Booking.Service.Implementation
                 selector: x => x,
                 include: x => x.Include(r => r.AccommodationInReservations)
                                .ThenInclude(a => a.Accommodation)
-                               .Include(r => r.User)
-            ).ToList();
+                               .Include(r => r.User))
+                .ToList();
         }
 
         public List<Reservation> GetAllForUser(Guid userId)
@@ -37,8 +37,7 @@ namespace Booking.Service.Implementation
                     include: x => x
                         .Include(r => r.User)
                         .Include(r => r.AccommodationInReservations)
-                            .ThenInclude(a => a.Accommodation)
-                )
+                            .ThenInclude(a => a.Accommodation))
                 .ToList();
         }
 
@@ -49,11 +48,12 @@ namespace Booking.Service.Implementation
                 predicate: x => x.Id.Equals(id),
                 include: x => x.Include(r => r.AccommodationInReservations)
                                .ThenInclude(a => a.Accommodation)
-                               .Include(r => r.User)
-            );
+                               .Include(r => r.User));
 
             if (reservation == null)
+            {
                 throw new Exception("Reservation not found");
+            }
 
             return reservation;
         }
@@ -62,20 +62,21 @@ namespace Booking.Service.Implementation
         {
             var reservation = _reservationRepository.Get(
                 selector: x => x,
-                predicate: x => x.Id == reservationId
-            );
+                predicate: x => x.Id == reservationId);
 
             if (reservation == null)
+            {
                 throw new Exception("Reservation not found");
+            }
 
             if (reservation.Status != ReservationStatus.Confirmed)
+            {
                 throw new Exception("Only confirmed reservations can be cancelled");
+            }
 
             reservation.Status = ReservationStatus.Cancelled;
 
             _reservationRepository.Update(reservation);
         }
-
-
     }
 }

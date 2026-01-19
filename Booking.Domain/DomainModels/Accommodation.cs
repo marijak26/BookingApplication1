@@ -32,9 +32,8 @@ namespace Booking.Domain.DomainModels
 
         public string? ImageUrl { get; set; }
 
-
         public virtual ICollection<AccommodationInReservation>? AccommodationInReservations { get; set; }
-        public virtual ICollection<AccommodationInReservationCart>? AccommodationInReservationCarts { get; set; }
 
+        public virtual ICollection<AccommodationInReservationCart>? AccommodationInReservationCarts { get; set; }
     }
 }

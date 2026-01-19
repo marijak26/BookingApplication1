@@ -12,5 +12,4 @@ namespace Booking.Domain.DTO
         public string Message { get; set; }
         public Guid? ReservationId { get; set; }
     }
-
 }
