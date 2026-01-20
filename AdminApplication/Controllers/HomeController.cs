@@ -18,10 +18,14 @@ namespace AdminApplication.Controllers
         private IActionResult CheckAdminAccess()
         {
             if (!IsLoggedIn())
+            {
                 return RedirectToAction("Login", "AdminAuth");
+            }
 
             if (!IsAdmin())
+            {
                 return View("NotAuthorized");
+            }
 
             return null;
         }
@@ -29,7 +33,10 @@ namespace AdminApplication.Controllers
         public async Task<IActionResult> Index()
         {
             var check = CheckAdminAccess();
-            if (check != null) return check;
+            if (check != null)
+            {
+                return check;
+            }
 
             var client = GetClientWithToken();
             string URL = "http://localhost:5087/api/Admin/GetAllReservations";
@@ -48,7 +55,10 @@ namespace AdminApplication.Controllers
         public async Task<IActionResult> Details(Guid id)
         {
             var check = CheckAdminAccess();
-            if (check != null) return check;
+            if (check != null)
+            {
+                return check;
+            }
 
             var client = GetClientWithToken();
             string URL = "http://localhost:5087/api/Admin/GetReservationDetails";
@@ -71,7 +81,10 @@ namespace AdminApplication.Controllers
         public async Task<IActionResult> AssignRole()
         {
             var check = CheckAdminAccess();
-            if (check != null) return check;
+            if (check != null)
+            {
+                return check;
+            }
 
             var client = GetClientWithToken();
             string URL = "http://localhost:5087/api/Admin/GetAllUsers";
@@ -91,7 +104,10 @@ namespace AdminApplication.Controllers
         public async Task<IActionResult> AssignRole(BookingApplicationUserDTO model)
         {
             var check = CheckAdminAccess();
-            if (check != null) return check;
+            if (check != null)
+            {
+                return check;
+            }
 
             if (model == null)
             {
@@ -103,9 +119,13 @@ namespace AdminApplication.Controllers
             var response = await client.PostAsJsonAsync("http://localhost:5087/api/Admin/AssignRole", model);
 
             if (!response.IsSuccessStatusCode)
+            {
                 TempData["Error"] = "Failed to assign role.";
+            }
             else
+            {
                 TempData["Success"] = "Role assigned successfully.";
+            }
 
             return RedirectToAction("AssignRole");
         }

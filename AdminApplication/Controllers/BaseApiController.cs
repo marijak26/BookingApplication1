@@ -29,7 +29,10 @@ namespace AdminApplication.Controllers
         protected bool IsAdmin()
         {
             var token = HttpContext.Session.GetString(AdminTokenKey);
-            if (string.IsNullOrEmpty(token)) return false;
+            if (string.IsNullOrEmpty(token))
+            {
+                return false;
+            }
 
             var handler = new JwtSecurityTokenHandler();
             var jwtToken = handler.ReadJwtToken(token);

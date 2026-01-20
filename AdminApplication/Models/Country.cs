@@ -5,5 +5,4 @@
         public string? Name { get; set; }
         public virtual ICollection<AccommodationHost>? Hosts { get; set; }
     }
-
 }

@@ -7,12 +7,9 @@
         public double PricePerNight { get; set; }
         public bool IsRented { get; set; }
         public AccommodationCategory Category { get; set; }
-
         public Guid HostId { get; set; }
         public AccommodationHost? Host { get; set; }
-
         public string? ImageUrl { get; set; }
-
         public virtual ICollection<AccommodationInReservation>? AccommodationInReservations { get; set; }
     }
 }

@@ -9,7 +9,6 @@ namespace AdminApplication.Data
             : base(options)
         {
         }
-
         public DbSet<Accommodation> Accommodations { get; set; }
         public DbSet<AccommodationHost> Hosts { get; set; }
         public DbSet<Country> Countries { get; set; }
