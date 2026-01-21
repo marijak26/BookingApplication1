@@ -11,7 +11,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        <form asp-action="Edit">
             @Html.AntiForgeryToken()
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
@@ -41,15 +41,29 @@
             </div>
 
             <div class="form-group">
-                <label>Current Image</label><br />
-                <img src="@Model.ImageUrl" alt="@Model.Name" class="img-fluid mb-2" style="max-width:200px;" />
-            </div>
+                <label>Select Image from Folder</label>
 
-            <div class="form-group">
-                <label>Change Image</label>
-                <input type="file" name="Image" class="form-control" />
+                <select name="ImageUrl" class="form-control">
+                    @foreach (var img in (List<string>)ViewData["Images"])
+                    {
+                        <option value="@img" selected="@(Model.ImageUrl == img)">
+                            @System.IO.Path.GetFileName(img)
+                        </option>
+                    }
+                </select>
             </div>
-
+            <div class="form-group mt-2">
+                <label>Preview</label><br />
+                <img id="preview"
+                     src="@Model.ImageUrl"
+                     class="img-fluid"
+                     style="max-width:200px;" />
+            </div>
+            <script>
+                document.querySelector('select[name="ImageUrl"]').addEventListener('change', function () {
+                    document.getElementById('preview').src = this.value;
+                });
+            </script>
             <div class="form-group">
                 <label asp-for="Category"></label>
                 <select asp-for="Category" class="form-control" asp-items="@(ViewData["Category"] as IEnumerable<SelectListItem>)">

@@ -40,7 +40,6 @@
     else
     {
         <div class="row">
-            <!-- LEFT: CART ITEMS -->
             <div class="col-md-8">
                 @foreach (var item in Model.Accommodations)
                 {
@@ -54,7 +53,6 @@
                             <p class="fw-bold text-success">Total: €@totalPrice</p>
 
                             <div class="d-flex gap-2">
-                                <!-- CONFIRM SINGLE -->
                                 <form asp-action="Confirm" method="post">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="cartItemId" value="@item.Id" />
@@ -63,13 +61,11 @@
                                     </button>
                                 </form>
 
-                                <!-- CONFIRM WHOLE CART -->
                                 <form asp-action="ConfirmCart" method="post">
                                     @Html.AntiForgeryToken()
                                     <button class="btn btn-primary btn-sm">Confirm All Reservations</button>
                                 </form>
 
-                                <!-- REMOVE -->
                                 <a asp-action="Delete"
                                    asp-route-id="@item.Id"
                                    class="btn btn-danger btn-sm"
@@ -82,7 +78,6 @@
                 }
             </div>
 
-            <!-- RIGHT: SUMMARY -->
             <div class="col-md-4">
                 <div class="card shadow-sm">
                     <div class="card-body">
@@ -95,7 +90,6 @@
                             </strong>
                         </p>
                         <hr />
-                        <!-- CLEAR CART -->
                         <form asp-action="Clear" method="post">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="btn btn-warning w-100"

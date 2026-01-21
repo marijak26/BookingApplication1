@@ -81,7 +81,7 @@ namespace Booking.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public IActionResult Create([Bind("Name,Description,PricePerNight,IsRented,Category,HostId")] Accommodation accommodation, IFormFile Image)
+        public IActionResult Create([Bind("Name,Description,PricePerNight,IsRented,Category,HostId")] Accommodation accommodation)
         {
             if (!ModelState.IsValid)
             {
@@ -99,30 +99,28 @@ namespace Booking.Web.Controllers
                 return View(accommodation);
             }
 
-            if (Image != null && Image.Length > 0)
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/accommodations");
+
+            if (!Directory.Exists(uploadsFolder))
+                Directory.CreateDirectory(uploadsFolder);
+
+            var imageFiles = Directory.GetFiles(uploadsFolder)
+                .Where(f => f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
+                            f.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            if (!imageFiles.Any())
             {
-                var uploadsFolder = Path.Combine(
-                    Directory.GetCurrentDirectory(),
-                    "wwwroot/images/accommodations");
-
-                if (!Directory.Exists(uploadsFolder))
-                {
-                    Directory.CreateDirectory(uploadsFolder);
-                }
-
-                var fileName = Guid.NewGuid() + Path.GetExtension(Image.FileName);
-                var filePath = Path.Combine(uploadsFolder, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    Image.CopyTo(stream);
-                }
-
-                accommodation.ImageUrl = "/images/accommodations/" + fileName;
+                accommodation.ImageUrl = "/images/accommodations/default.jpg";
             }
             else
             {
-                accommodation.ImageUrl = "/images/accommodations/default.jpg";
+                var count = _accommodationService.GetAll().Count();
+
+                var imageIndex = count % imageFiles.Count;
+                var selectedImage = Path.GetFileName(imageFiles[imageIndex]);
+
+                accommodation.ImageUrl = "/images/accommodations/" + selectedImage;
             }
 
             accommodation.Id = Guid.NewGuid();
@@ -135,8 +133,8 @@ namespace Booking.Web.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult Edit(Guid id)
         {
-            var acc = _accommodationService.GetById(id);
-            if (acc == null)
+            var accommodation = _accommodationService.GetById(id);
+            if (accommodation == null)
             {
                 return NotFound();
             }
@@ -150,7 +148,17 @@ namespace Booking.Web.Controllers
 
             var hosts = _accommodationService.GetAllHosts().ToList();
             ViewData["HostId"] = new SelectList(hosts, "Id", "FullName");
-            return View(acc);
+            var imagesFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/accommodations");
+
+            var images = Directory.Exists(imagesFolder)
+                ? Directory.GetFiles(imagesFolder)
+                    .Where(f => f.EndsWith(".jpg") || f.EndsWith(".png"))
+                    .Select(f => "/images/accommodations/" + Path.GetFileName(f))
+                    .ToList()
+                : new List<string>();
+
+            ViewData["Images"] = images;
+            return View(accommodation);
         }
 
         // POST: Accommodations/Edit/5
@@ -159,7 +167,7 @@ namespace Booking.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public IActionResult Edit(Guid id, [Bind("Id,Name,Description,PricePerNight,IsRented,Category,HostId")] Accommodation accommodation, IFormFile Image)
+        public IActionResult Edit(Guid id, [Bind("Id,Name,Description,PricePerNight,IsRented,Category,HostId,ImageUrl")] Accommodation accommodation)
         {
             if (id != accommodation.Id)
             {
@@ -178,42 +186,7 @@ namespace Booking.Web.Controllers
                 return View(accommodation);
             }
 
-            var existing = _accommodationService.GetById(id);
-            if (existing == null)
-                return NotFound();
-
-            if (Image != null && Image.Length > 0)
-            {
-                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/accommodations");
-                if (!Directory.Exists(uploadsFolder))
-                    Directory.CreateDirectory(uploadsFolder);
-
-                var fileName = Guid.NewGuid() + Path.GetExtension(Image.FileName);
-                var filePath = Path.Combine(uploadsFolder, fileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    Image.CopyTo(stream);
-                }
-
-                if (!string.IsNullOrEmpty(existing.ImageUrl) && !existing.ImageUrl.Contains("default.jpg"))
-                {
-                    var oldFilePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", existing.ImageUrl.TrimStart('/').Replace("/", "\\"));
-                    if (System.IO.File.Exists(oldFilePath))
-                        System.IO.File.Delete(oldFilePath);
-                }
-
-                existing.ImageUrl = "/images/accommodations/" + fileName;
-            }
-
-            existing.Name = accommodation.Name;
-            existing.Description = accommodation.Description;
-            existing.PricePerNight = accommodation.PricePerNight;
-            existing.IsRented = accommodation.IsRented;
-            existing.Category = accommodation.Category;
-            existing.HostId = accommodation.HostId;
-
-            _accommodationService.Update(existing);
+            _accommodationService.Update(accommodation);
 
             return RedirectToAction(nameof(Index));
         }
