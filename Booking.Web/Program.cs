@@ -25,7 +25,8 @@ builder.Services.AddDefaultIdentity<BookingApplicationUser>(options =>
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
 
-builder.Services.AddHttpClient<ICountryService, CountryService>();
+builder.Services.AddHttpClient();
+builder.Services.AddTransient<ICountryService, CountryService>();
 
 builder.Services.AddScoped<IAvailabilityService, AvailabilityService>();
 builder.Services.AddScoped<IAccommodationHostService, AccommodationHostService>();

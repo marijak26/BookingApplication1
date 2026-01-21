@@ -80,11 +80,13 @@ namespace Booking.Service.Implementation
             var accommodations = cart.Accommodations?.ToList() ?? new List<AccommodationInReservationCart>();
             double totalPrice = accommodations.Sum(x => x.Nights * x.Accommodation.PricePerNight);
 
-            return new ReservationCartDTO
+            ReservationCartDTO model = new ReservationCartDTO
             {
                 Accommodations = accommodations,
                 TotalPrice = totalPrice
             };
+
+            return model;
         }
 
         public void DeleteAccommodationFromReservationCart(Guid accommodationInCartId)

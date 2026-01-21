@@ -5,6 +5,7 @@ using Booking.Service.Interface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -16,24 +17,19 @@ namespace Booking.Service.Implementation
         private readonly IRepository<Country> _countryRepository;
         private readonly HttpClient _httpClient;
 
-        public CountryService(IRepository<Country> countryRepository, HttpClient httpClient)
+        public CountryService(IHttpClientFactory httpClientFactory, IRepository<Country> countryRepository)
         {
+            _httpClient = httpClientFactory.CreateClient();
             _countryRepository = countryRepository;
-            _httpClient = httpClient;
         }
 
         public async Task<List<Country>> GetCountriesFromApi()
         {
-            var response = await _httpClient.GetAsync("https://restcountries.com/v3.1/all?fields=name");
+            var apiCountries = await _httpClient
+                .GetFromJsonAsync<List<CountryApiDTO>>(
+                    "https://restcountries.com/v3.1/all?fields=name");
 
-            response.EnsureSuccessStatusCode();
-
-            var json = await response.Content.ReadAsStringAsync();
-
-            var apiCountries = JsonSerializer.Deserialize<List<CountryApiDTO>>(json,
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-            return apiCountries
+            var countries = apiCountries
                 .Where(x => !string.IsNullOrEmpty(x.name.common))
                 .Select(x => new Country
                 {
@@ -42,6 +38,10 @@ namespace Booking.Service.Implementation
                 })
                 .OrderBy(x => x.Name)
                 .ToList();
+
+            _countryRepository.InsertMany(countries);
+
+            return countries;
         }
 
         public void SeedCountries(List<Country> countries)

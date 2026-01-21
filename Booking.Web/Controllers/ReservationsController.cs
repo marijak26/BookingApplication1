@@ -24,6 +24,7 @@ namespace Booking.Web.Controllers
             _reservationService = reservationService;
         }
 
+        // GET: Reservations
         public IActionResult Index(string status)
         {
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
@@ -45,6 +46,7 @@ namespace Booking.Web.Controllers
             return View(reservations);
         }
 
+        // GET: Reservations/Details/5
         public IActionResult Details(Guid id)
         {
             var reservation = _reservationService.GetReservation(id);

@@ -123,7 +123,6 @@ namespace Booking.Web.Controllers
                 accommodation.ImageUrl = "/images/accommodations/" + selectedImage;
             }
 
-            accommodation.Id = Guid.NewGuid();
             _accommodationService.Insert(accommodation);
 
             return RedirectToAction(nameof(Index));
@@ -187,7 +186,6 @@ namespace Booking.Web.Controllers
             }
 
             _accommodationService.Update(accommodation);
-
             return RedirectToAction(nameof(Index));
         }
 

@@ -29,8 +29,7 @@ namespace Booking.Web.Controllers
         // GET: AccommodationHosts
         public IActionResult Index()
         {
-            var hosts = _hostService.GetAll();
-            return View(hosts);
+            return View(_hostService.GetAll());
         }
 
         // GET: AccommodationHosts/Details/5
@@ -71,7 +70,7 @@ namespace Booking.Web.Controllers
                 return View(accommodationHost);
             }
 
-            _hostService.Create(accommodationHost);
+            _hostService.Insert(accommodationHost);
             return RedirectToAction(nameof(Index));
         }
 
@@ -141,7 +140,7 @@ namespace Booking.Web.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult DeleteConfirmed(Guid id)
         {
-            _hostService.Delete(id);
+            _hostService.DeleteById(id);
             return RedirectToAction(nameof(Index));
         }
 

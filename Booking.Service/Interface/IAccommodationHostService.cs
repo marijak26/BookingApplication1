@@ -11,8 +11,8 @@ namespace Booking.Service.Interface
     {
         List<AccommodationHost> GetAll();
         AccommodationHost GetById(Guid id);
-        void Create(AccommodationHost host);
+        void Insert(AccommodationHost host);
         void Update(AccommodationHost host);
-        void Delete(Guid id);
+        void DeleteById(Guid id);
     }
 }

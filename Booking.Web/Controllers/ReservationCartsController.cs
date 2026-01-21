@@ -23,15 +23,17 @@ namespace Booking.Web.Controllers
             _reservationCartService = reservationCartService;
         }
 
+        // GET: ReservationCarts
         public IActionResult Index()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var model = _reservationCartService.GetByUserIdWithIncludedAccommodations(Guid.Parse(userId));
-            return View(model);
+            var userReservationCart = _reservationCartService.GetByUserIdWithIncludedAccommodations(Guid.Parse(userId));
+            return View(userReservationCart);
         }
 
         public IActionResult Delete(Guid id)
         {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             _reservationCartService.DeleteAccommodationFromReservationCart(id);
             return RedirectToAction(nameof(Index));
         }

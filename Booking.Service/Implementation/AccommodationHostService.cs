@@ -35,7 +35,7 @@ namespace Booking.Service.Implementation
                 include: x => x.Include(h => h.Country));
         }
 
-        public void Create(AccommodationHost host)
+        public void Insert(AccommodationHost host)
         {
             host.Id = Guid.NewGuid();
             _hostRepository.Insert(host);
@@ -46,7 +46,7 @@ namespace Booking.Service.Implementation
             _hostRepository.Update(host);
         }
 
-        public void Delete(Guid id)
+        public void DeleteById(Guid id)
         {
             var host = GetById(id);
             if (host != null)

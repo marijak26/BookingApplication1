@@ -50,9 +50,9 @@ namespace Booking.Service.Implementation
         {
             return _accommodationRepository.Get(
                 selector: x => x,
+                predicate: x => x.Id.Equals(id),
                 include: x => x.Include(a => a.Host)
-                               .ThenInclude(h => h.Country),
-                predicate: x => x.Id.Equals(id));
+                               .ThenInclude(h => h.Country));
         }
 
         public Accommodation Insert(Accommodation accommodation)
@@ -91,13 +91,15 @@ namespace Booking.Service.Implementation
             var fromDate = DateTime.Today.AddDays(1);
             var toDate = fromDate.AddDays(1);
 
-            return new AddToReservationCartDTO
+            var addAccommodationToCartModel = new AddToReservationCartDTO
             {
                 SelectedAccommodationId = accommodation.Id,
                 SelectedAccommodationName = accommodation.Name,
                 FromDate = fromDate,
                 ToDate = toDate
             };
+
+            return addAccommodationToCartModel;
         }
 
         public ReservationResultDTO AddAccommodationToReservationCart(Guid accommodationId, Guid userId, DateTime fromDate, DateTime toDate)
@@ -125,7 +127,10 @@ namespace Booking.Service.Implementation
 
             _accommodationInCartRepository.Insert(newItem);
 
-            return new ReservationResultDTO { Success = true, Message = "Accommodation added to cart" };
+            return new ReservationResultDTO { 
+                Success = true, 
+                Message = "Accommodation added to cart" 
+            };
         }
 
         public List<Accommodation> GetByCountry(Guid countryId)
