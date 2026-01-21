@@ -28,37 +28,16 @@
                 <input asp-for="Description" class="form-control" />
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
-
+            <div class="form-group">
+                <label asp-for="ImageUrl" class="control-label">Image</label>
+                <input asp-for="ImageUrl" class="form-control" />
+                <span asp-validation-for="ImageUrl" class="text-danger"></span>
+            </div>
             <div class="form-group">
                 <label asp-for="PricePerNight" class="control-label">Price Per Night</label>
                 <input asp-for="PricePerNight" class="form-control" />
                 <span asp-validation-for="PricePerNight" class="text-danger"></span>
             </div>
-
-            <div class="form-group">
-                <label>Select Image from Folder</label>
-
-                <select name="ImageUrl" class="form-control">
-                    @foreach (var img in (List<string>)ViewData["Images"])
-                    {
-                        <option value="@img" selected="@(Model.ImageUrl == img)">
-                            @System.IO.Path.GetFileName(img)
-                        </option>
-                    }
-                </select>
-            </div>
-            <div class="form-group mt-2">
-                <label>Preview</label><br />
-                <img id="preview"
-                     src="@Model.ImageUrl"
-                     class="img-fluid"
-                     style="max-width:200px;" />
-            </div>
-            <script>
-                document.querySelector('select[name="ImageUrl"]').addEventListener('change', function () {
-                    document.getElementById('preview').src = this.value;
-                });
-            </script>
             <div class="form-group">
                 <label asp-for="Category"></label>
                 <select asp-for="Category" class="form-control" asp-items="@(ViewData["Category"] as IEnumerable<SelectListItem>)">
@@ -66,7 +45,6 @@
                 </select>
                 <span asp-validation-for="Category" class="text-danger"></span>
             </div>
-
             <div class="form-group">
                 <label asp-for="HostId">Host</label>
                 <select asp-for="HostId" class="form-control" asp-items="@(ViewData["HostId"] as SelectList)">

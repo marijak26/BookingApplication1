@@ -15,10 +15,15 @@ namespace Booking.Domain.DomainModels
         [Display(Name = "Contact Email")]
         public string? ContactEmail { get; set; }
 
-        public Guid CountryId { get; set; }
+        public Guid? CountryId { get; set; }
 
         [Display(Name = "Country")]
         public Country? Country { get; set; }
+
+        public Guid? CityId { get; set; }
+
+        [Display(Name = "City")]
+        public City? City { get; set; }
 
         public virtual ICollection<Accommodation>? Accommodations { get; set; }
     }

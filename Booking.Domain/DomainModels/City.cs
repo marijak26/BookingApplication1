@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace Booking.Domain.DomainModels
 {
-    public class Country : BaseEntity
+    public class City : BaseEntity
     {
-        [Display(Name = "Name")]
-        public string? Name { get; set; }
-        public virtual ICollection<City> Cities { get; set; } = new List<City>();
+        public string Name { get; set; } = string.Empty;
+        public Guid CountryId { get; set; }
+        public virtual Country Country { get; set; }
         public virtual ICollection<AccommodationHost>? Hosts { get; set; }
+
     }
 }

@@ -31,20 +31,36 @@ namespace Booking.Web.Controllers
         // GET: Accommodations
         public IActionResult Index(Guid? countryId)
         {
-            var accommodations = _accommodationService.GetAll();
+            var accommodations = _accommodationService.GetAllWithHostsAndLocations();
 
             if (countryId.HasValue)
             {
-                accommodations = _accommodationService.GetByCountry(countryId.Value);
+                accommodations = accommodations
+                    .Where(a => a.Host != null && a.Host.CountryId == countryId.Value)
+                    .ToList();
             }
+
+            var grouped = accommodations
+                .Where(a => a.Host != null && a.Host.Country != null && a.Host.City != null)
+                .GroupBy(a => a.Host.Country.Name)
+                .ToDictionary(
+                    countryGroup => countryGroup.Key,
+                    countryGroup => countryGroup
+                        .GroupBy(a => a.Host.City.Name)
+                        .ToDictionary(
+                            cityGroup => cityGroup.Key,
+                            cityGroup => cityGroup.ToList()
+                        )
+                );
 
             var countries = _countryService.GetAllCountriesFromDb()
                 .Where(c => _accommodationService.GetByCountry(c.Id).Any())
                 .OrderBy(c => c.Name)
                 .ToList();
+
             ViewData["Countries"] = new SelectList(countries, "Id", "Name");
 
-            return View(accommodations);
+            return View(grouped);
         }
 
         // GET: Accommodations/Details/5
@@ -82,7 +98,7 @@ namespace Booking.Web.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public IActionResult Create([Bind("Name,Description,PricePerNight,IsRented,Category,HostId")] Accommodation accommodation)
+        public IActionResult Create([Bind("Name,Description,PricePerNight,IsRented,Category,HostId,ImageUrl")] Accommodation accommodation)
         {
             if (!ModelState.IsValid)
             {
@@ -98,30 +114,6 @@ namespace Booking.Web.Controllers
                 ViewData["HostId"] = new SelectList(hosts, "Id", "FullName");
 
                 return View(accommodation);
-            }
-
-            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/accommodations");
-
-            if (!Directory.Exists(uploadsFolder))
-                Directory.CreateDirectory(uploadsFolder);
-
-            var imageFiles = Directory.GetFiles(uploadsFolder)
-                .Where(f => f.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) ||
-                            f.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            if (!imageFiles.Any())
-            {
-                accommodation.ImageUrl = "/images/accommodations/default.jpg";
-            }
-            else
-            {
-                var count = _accommodationService.GetAll().Count();
-
-                var imageIndex = count % imageFiles.Count;
-                var selectedImage = Path.GetFileName(imageFiles[imageIndex]);
-
-                accommodation.ImageUrl = "/images/accommodations/" + selectedImage;
             }
 
             _accommodationService.Insert(accommodation);
@@ -148,16 +140,6 @@ namespace Booking.Web.Controllers
 
             var hosts = _accommodationService.GetAllHosts().ToList();
             ViewData["HostId"] = new SelectList(hosts, "Id", "FullName");
-            var imagesFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/accommodations");
-
-            var images = Directory.Exists(imagesFolder)
-                ? Directory.GetFiles(imagesFolder)
-                    .Where(f => f.EndsWith(".jpg") || f.EndsWith(".png"))
-                    .Select(f => "/images/accommodations/" + Path.GetFileName(f))
-                    .ToList()
-                : new List<string>();
-
-            ViewData["Images"] = images;
             return View(accommodation);
         }
 

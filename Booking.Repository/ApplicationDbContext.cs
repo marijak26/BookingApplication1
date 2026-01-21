@@ -15,6 +15,7 @@ namespace Booking.Repository
         public DbSet<Accommodation> Accommodations { get; set; }
         public DbSet<AccommodationHost> Hosts { get; set; }
         public DbSet<Country> Countries { get; set; }
+        public DbSet<City> Cities { get; set; }
         public DbSet<Reservation> Reservations { get; set; }
         public DbSet<ReservationCart> ReservationCarts { get; set; }
         public DbSet<AccommodationInReservation> AccommodationInReservations { get; set; }
@@ -24,11 +25,23 @@ namespace Booking.Repository
         {
             base.OnModelCreating(builder);
 
+            builder.Entity<City>()
+                .HasOne(c => c.Country)
+                .WithMany(c => c.Cities)
+                .HasForeignKey(c => c.CountryId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<AccommodationHost>()
+               .HasOne(h => h.City)
+               .WithMany(c => c.Hosts)
+               .HasForeignKey(h => h.CityId)
+               .OnDelete(DeleteBehavior.Cascade);
+
             builder.Entity<AccommodationHost>()
                 .HasOne(h => h.Country)
                 .WithMany(c => c.Hosts)
                 .HasForeignKey(h => h.CountryId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.NoAction);
 
             builder.Entity<Accommodation>()
                 .HasOne(a => a.Host)

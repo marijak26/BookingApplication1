@@ -26,8 +26,6 @@ namespace Booking.Web.Controllers
         public async Task<IActionResult> Import()
         {
             var countries = await _countryService.GetCountriesFromApi();
-            _countryService.SeedCountries(countries);
-
             return RedirectToAction(nameof(Index));
         }
 
@@ -40,5 +38,13 @@ namespace Booking.Web.Controllers
             ViewData["CountryId"] = new SelectList(countries, "Id", "Name");
             return View(countries);
         }
+
+        [Authorize(Roles = "Admin")]
+        public IActionResult ClearAll()
+        {
+            _countryService.ClearCountriesAndCities();
+            return RedirectToAction(nameof(Index));
+        }
+
     }
 }

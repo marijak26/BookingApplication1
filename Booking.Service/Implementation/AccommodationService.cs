@@ -191,5 +191,17 @@ namespace Booking.Service.Implementation
                 end = r.ToDate.ToString("yyyy-MM-dd")})
                 .ToList();
         }
+
+        public List<Accommodation> GetAllWithHostsAndLocations()
+        {
+            return _accommodationRepository.GetAll(
+                selector: a => a,
+                include: q => q
+                    .Include(a => a.Host)
+                        .ThenInclude(h => h.Country)
+                    .Include(a => a.Host)
+                        .ThenInclude(h => h.City)
+            ).ToList();
+        }
     }
 }

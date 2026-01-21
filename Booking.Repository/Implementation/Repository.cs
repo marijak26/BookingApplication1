@@ -35,7 +35,7 @@ namespace Booking.Repository.Implementation
             {
                 throw new ArgumentNullException("entities");
             }
-            entities.AddRange(entities);
+            entites.AddRange(entities);
             _context.SaveChanges();
             return entities;
         }
@@ -102,6 +102,14 @@ namespace Booking.Repository.Implementation
             }
 
             return query.Select(selector).AsEnumerable();
+        }
+
+        public List<T> DeleteMany(List<T> entities) 
+        { 
+            if (entities == null || !entities.Any()) 
+                return new List<T>(); 
+            _context.RemoveRange(entities);
+            _context.SaveChanges(); return entities; 
         }
 
     }

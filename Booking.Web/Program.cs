@@ -3,7 +3,6 @@ using Booking.Domain.Identity;
 using Booking.Repository;
 using Booking.Repository.Implementation;
 using Booking.Repository.Interface;
-using Booking.Service.Extensions;
 using Booking.Service.Implementation;
 using Booking.Service.Interface;
 using Microsoft.AspNetCore.Identity;
@@ -68,7 +67,6 @@ using (var scope = app.Services.CreateScope())
         await userManager.AddToRoleAsync(adminUser, "Admin");
     }
 
-    await app.Services.SeedCountriesAsync();
 }
 
 // Configure the HTTP request pipeline.

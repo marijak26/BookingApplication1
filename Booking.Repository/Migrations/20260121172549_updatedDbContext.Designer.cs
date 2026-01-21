@@ -4,6 +4,7 @@ using Booking.Repository;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Booking.Repository.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260121172549_updatedDbContext")]
+    partial class updatedDbContext
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,21 +67,16 @@ namespace Booking.Repository.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("CityId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("ContactEmail")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("CountryId")
+                    b.Property<Guid>("CountryId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("FullName")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CityId");
 
                     b.HasIndex("CountryId");
 
@@ -440,17 +438,11 @@ namespace Booking.Repository.Migrations
 
             modelBuilder.Entity("Booking.Domain.DomainModels.AccommodationHost", b =>
                 {
-                    b.HasOne("Booking.Domain.DomainModels.City", "City")
-                        .WithMany("Hosts")
-                        .HasForeignKey("CityId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("Booking.Domain.DomainModels.Country", "Country")
                         .WithMany("Hosts")
                         .HasForeignKey("CountryId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
-                    b.Navigation("City");
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Country");
                 });
@@ -595,11 +587,6 @@ namespace Booking.Repository.Migrations
             modelBuilder.Entity("Booking.Domain.DomainModels.AccommodationHost", b =>
                 {
                     b.Navigation("Accommodations");
-                });
-
-            modelBuilder.Entity("Booking.Domain.DomainModels.City", b =>
-                {
-                    b.Navigation("Hosts");
                 });
 
             modelBuilder.Entity("Booking.Domain.DomainModels.Country", b =>

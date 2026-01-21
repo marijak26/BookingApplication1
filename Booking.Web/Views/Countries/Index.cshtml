@@ -2,16 +2,21 @@
 
 <h2>Countries</h2>
 @if (User.IsInRole("Admin"))
-        {
-<a asp-action="Import" class="btn btn-primary mb-3">
-    Import Countries from API
-</a>
-        }
+{
+    <a asp-action="Import" class="btn btn-primary mb-3">
+        Import Countries from API
+    </a>
+    <a asp-action="ClearAll" class="btn btn-danger mb-3"
+       onclick="return confirm('Are you sure you want to delete all countries and cities?');">
+        Clear All Countries and Cities
+    </a>
+}
 
 <table class="table table-bordered">
     <thead>
         <tr>
             <th>Name</th>
+            <th>Cities</th>
         </tr>
     </thead>
     <tbody>
@@ -19,6 +24,16 @@
         {
             <tr>
                 <td>@country.Name</td>
+                <td>
+                    @if (country.Cities != null && country.Cities.Any())
+                    {
+                        @string.Join(", ", country.Cities.Select(c => c.Name))
+                    }
+                    else
+                    {
+                        <em>No cities</em>
+                    }
+                </td>
             </tr>
         }
     </tbody>

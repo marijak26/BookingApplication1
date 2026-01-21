@@ -1,7 +1,7 @@
 ﻿@model Booking.Domain.DomainModels.AccommodationHost
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Accommodation Host";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -12,30 +12,37 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <div class="form-group">
+            <div class="form-group mb-2">
                 <label asp-for="FullName" class="control-label">Full Name</label>
                 <input asp-for="FullName" class="form-control" />
                 <span asp-validation-for="FullName" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
+            <div class="form-group mb-2">
                 <label asp-for="ContactEmail" class="control-label">Contact Email</label>
                 <input asp-for="ContactEmail" class="form-control" />
                 <span asp-validation-for="ContactEmail" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
+            <div class="form-group mb-2">
                 <label asp-for="CountryId" class="control-label">Country</label>
-                <select asp-for="CountryId" class="form-control"
-                        asp-items="@(ViewData["CountryId"] as SelectList)">
+                <select asp-for="CountryId" class="form-control" asp-items="@(ViewData["CountryId"] as SelectList)">
                     <option value="">-- Select Country --</option>
                 </select>
                 <span asp-validation-for="CountryId" class="text-danger"></span>
             </div>
 
+            <div class="form-group mb-2">
+                <label asp-for="CityId" class="control-label">City</label>
+                <select asp-for="CityId" class="form-control" asp-items="@(ViewData["CityId"] as SelectList)">
+                    <option value="">-- Select City --</option>
+                </select>
+                <span asp-validation-for="CityId" class="text-danger"></span>
+            </div>
+
             <input type="hidden" asp-for="Id" />
 
-            <div class="form-group">
+            <div class="form-group mt-2">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
@@ -43,7 +50,7 @@
 </div>
 
 <div>
-    <a asp-action="Index" class="btn btn-secondary mt-1">← Back to List</a>
+    <a asp-action="Index" class="btn btn-secondary mt-2">← Back to List</a>
 </div>
 
 @section Scripts {

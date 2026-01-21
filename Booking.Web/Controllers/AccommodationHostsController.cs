@@ -1,16 +1,10 @@
 ﻿using Booking.Domain.DomainModels;
-using Booking.Repository;
-using Booking.Service.Implementation;
 using Booking.Service.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Booking.Web.Controllers
 {
@@ -20,7 +14,9 @@ namespace Booking.Web.Controllers
         private readonly IAccommodationHostService _hostService;
         private readonly ICountryService _countryService;
 
-        public AccommodationHostsController(IAccommodationHostService hostService, ICountryService countryService)
+        public AccommodationHostsController(
+            IAccommodationHostService hostService,
+            ICountryService countryService)
         {
             _hostService = hostService;
             _countryService = countryService;
@@ -35,15 +31,10 @@ namespace Booking.Web.Controllers
         // GET: AccommodationHosts/Details/5
         public IActionResult Details(Guid? id)
         {
-            if (id == null) { 
-                return NotFound(); 
-            }
+            if (id == null) return NotFound();
 
             var host = _hostService.GetById(id.Value);
-            if (host == null)
-            {
-                return NotFound();
-            }
+            if (host == null) return NotFound();
 
             return View(host);
         }
@@ -52,25 +43,23 @@ namespace Booking.Web.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
-            LoadCountriesDropdown();
+            LoadDropdowns();
             return View();
         }
 
         // POST: AccommodationHosts/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public IActionResult Create([Bind("FullName,ContactEmail,CountryId,Id")] AccommodationHost accommodationHost)
+        public IActionResult Create([Bind("FullName,ContactEmail,CountryId,CityId,Id")] AccommodationHost host)
         {
             if (!ModelState.IsValid)
             {
-                LoadCountriesDropdown();
-                return View(accommodationHost);
+                LoadDropdowns(host.CountryId, host.CityId);
+                return View(host);
             }
 
-            _hostService.Insert(accommodationHost);
+            _hostService.Insert(host);
             return RedirectToAction(nameof(Index));
         }
 
@@ -78,41 +67,30 @@ namespace Booking.Web.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult Edit(Guid? id)
         {
-            if (id == null) 
-            { 
-                return NotFound(); 
-            }
+            if (id == null) return NotFound();
 
             var host = _hostService.GetById(id.Value);
-            if (host == null)
-            {
-                return NotFound();
-            }
+            if (host == null) return NotFound();
 
-            LoadCountriesDropdown(host.CountryId);
+            LoadDropdowns(host.CountryId, host.CityId);
             return View(host);
         }
 
         // POST: AccommodationHosts/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public IActionResult Edit(Guid id, [Bind("FullName,ContactEmail,CountryId,Id")] AccommodationHost accommodationHost)
+        public IActionResult Edit(Guid id, [Bind("FullName,ContactEmail,CountryId,CityId,Id")] AccommodationHost host)
         {
-            if (id != accommodationHost.Id)
-            {
-                return NotFound();
-            }
+            if (id != host.Id) return NotFound();
 
             if (!ModelState.IsValid)
             {
-                LoadCountriesDropdown(accommodationHost.CountryId);
-                return View(accommodationHost);
+                LoadDropdowns(host.CountryId, host.CityId);
+                return View(host);
             }
 
-            _hostService.Update(accommodationHost);
+            _hostService.Update(host);
             return RedirectToAction(nameof(Index));
         }
 
@@ -120,16 +98,10 @@ namespace Booking.Web.Controllers
         [Authorize(Roles = "Admin")]
         public IActionResult Delete(Guid? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var host = _hostService.GetById(id.Value);
-            if (host == null)
-            {
-                return NotFound();
-            }
+            if (host == null) return NotFound();
 
             return View(host);
         }
@@ -144,17 +116,27 @@ namespace Booking.Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private bool AccommodationHostExists(Guid id)
-        {
-            return _hostService.GetById(id) != null;
-        }
-
-        private void LoadCountriesDropdown(Guid? selectedCountryId = null)
+        private void LoadDropdowns(Guid? selectedCountryId = null, Guid? selectedCityId = null)
         {
             var countries = _countryService.GetAllCountriesFromDb()
-                                   .OrderBy(c => c.Name)
-                                   .ToList();
+                                           .Select(c => new { c.Id, c.Name })
+                                           .OrderBy(c => c.Name)
+                                           .ToList();
+
             ViewData["CountryId"] = new SelectList(countries, "Id", "Name", selectedCountryId);
+
+            List<City> cities = new List<City>();
+            if (selectedCountryId.HasValue)
+            {
+                cities = _countryService.GetAllCountriesFromDb()
+                            .Where(c => c.Id == selectedCountryId.Value)
+                            .SelectMany(c => c.Cities)
+                            .OrderBy(c => c.Name)
+                            .ToList();
+            }
+
+            ViewData["CityId"] = new SelectList(cities, "Id", "Name", selectedCityId);
         }
+
     }
 }

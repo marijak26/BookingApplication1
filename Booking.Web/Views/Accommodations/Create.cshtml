@@ -30,6 +30,11 @@
                 <span asp-validation-for="PricePerNight" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="ImageUrl" class="control-label">Image</label>
+                <input asp-for="ImageUrl" class="form-control" />
+                <span asp-validation-for="ImageUrl" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <label asp-for="Category"></label>
                 <select asp-for="Category" class="form-control" asp-items="@(ViewData["Category"] as IEnumerable<SelectListItem>)">
                     <option value="">-- Select Category --</option>

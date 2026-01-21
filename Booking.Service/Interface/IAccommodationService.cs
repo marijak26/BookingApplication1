@@ -21,5 +21,7 @@ namespace Booking.Service.Interface
         List<Accommodation> GetByCountry(Guid countryId);
         bool IsAccommodationAvailable(Guid accommodationId, DateTime from, DateTime to);
         List<CalendarEventDTO> GetAccommodationCalendar(Guid accommodationId);
+        List<Accommodation> GetAllWithHostsAndLocations();
+
     }
 }
