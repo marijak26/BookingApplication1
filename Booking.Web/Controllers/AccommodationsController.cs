@@ -39,6 +39,7 @@ namespace Booking.Web.Controllers
             }
 
             var countries = _countryService.GetAllCountriesFromDb()
+                .Where(c => _accommodationService.GetByCountry(c.Id).Any())
                 .OrderBy(c => c.Name)
                 .ToList();
             ViewData["Countries"] = new SelectList(countries, "Id", "Name");

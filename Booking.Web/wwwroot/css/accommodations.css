@@ -1,5 +1,4 @@
-﻿/* HERO SECTION */
-.hero-section {
+﻿.hero-section {
     background: linear-gradient( rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45) ), url('/images/hero.jpg');
     background-size: cover;
     background-position: center;
@@ -23,7 +22,6 @@
         margin-bottom: 30px;
     }
 
-/* SEARCH BAR */
 .search-bar {
     display: flex;
     justify-content: center;
@@ -34,13 +32,11 @@
         max-width: 300px;
     }
 
-/* SECTION TITLE */
 .section-title {
     font-weight: bold;
     margin-bottom: 30px;
 }
 
-/* ACCOMMODATION CARD */
 .accommodation-card {
     border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
