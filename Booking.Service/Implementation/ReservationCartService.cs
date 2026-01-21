@@ -1,5 +1,6 @@
 ﻿using Booking.Domain.DomainModels;
 using Booking.Domain.DTO;
+using Booking.Domain.Email;
 using Booking.Domain.Enum;
 using Booking.Repository.Interface;
 using Booking.Service.Interface;
@@ -7,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Booking.Service.Implementation
 {
@@ -18,6 +20,7 @@ namespace Booking.Service.Implementation
         private readonly IRepository<AccommodationInReservation> _accommodationInReservationRepository;
         private readonly IUserRepository _userRepository;
         private readonly IAvailabilityService _availabilityService;
+        private readonly IEmailService _emailService;
 
         public ReservationCartService(
             IRepository<ReservationCart> reservationCartRepository,
@@ -25,7 +28,8 @@ namespace Booking.Service.Implementation
             IRepository<Reservation> reservationRepository,
             IRepository<AccommodationInReservation> accommodationInReservationRepository,
             IUserRepository userRepository,
-            IAvailabilityService availabilityService)
+            IAvailabilityService availabilityService,
+            IEmailService emailService)
         {
             _reservationCartRepository = reservationCartRepository;
             _accommodationInReservationCartRepository = accommodationInReservationCartRepository;
@@ -33,6 +37,7 @@ namespace Booking.Service.Implementation
             _accommodationInReservationRepository = accommodationInReservationRepository;
             _userRepository = userRepository;
             _availabilityService = availabilityService;
+            _emailService = emailService;
         }
 
         public ReservationCart GetOrCreateCartForUser(Guid userId)
@@ -109,6 +114,8 @@ namespace Booking.Service.Implementation
                 selector: x => x,
                 predicate: x => x.Id == cartItemId,
                 include: x => x.Include(a => a.Accommodation)
+                                .Include(a => a.ReservationCart)
+                                .ThenInclude(c => c.User)
             );
 
             if (cartItem == null)
@@ -157,6 +164,22 @@ namespace Booking.Service.Implementation
 
             _accommodationInReservationCartRepository.Delete(cartItem);
 
+            var user = cartItem.ReservationCart.User;
+            if (!string.IsNullOrEmpty(user.Email))
+            {
+                var message = new EmailMessage
+                {
+                    MailTo = user.Email,
+                    Subject = "Reservation Confirmed",
+                    Content = $"Your reservation for {cartItem.Accommodation.Name} is confirmed.\n" +
+                              $"Check-In Date: {cartItem.FromDate:yyyy-MM-dd}\n" +
+                              $"Check-Out Date: {cartItem.ToDate:yyyy-MM-dd}\n" +
+                              $"Total price: €{totalPrice:F2}"
+                };
+
+                _emailService.SendEmailAsync(message);
+            }
+
             return new ReservationResultDTO
             {
                 Success = true,
@@ -171,7 +194,8 @@ namespace Booking.Service.Implementation
                 selector: x => x,
                 predicate: x => x.UserId == userId.ToString(),
                 include: x => x.Include(c => c.Accommodations)
-                               .ThenInclude(a => a.Accommodation));
+                               .ThenInclude(a => a.Accommodation)
+                               .Include(c => c.User));
 
             if (cart == null || !cart.Accommodations.Any())
                 return new ReservationResultDTO 
@@ -203,10 +227,14 @@ namespace Booking.Service.Implementation
                 AccommodationInReservations = new List<AccommodationInReservation>()
             };
 
+            StringBuilder emailContent = new StringBuilder();
+            emailContent.AppendLine("Your whole reservation cart is confirmed.\nDetails:");
+
             foreach (var item in cart.Accommodations)
             {
                 int nights = (item.ToDate - item.FromDate).Days;
-                totalPrice += nights * item.Accommodation.PricePerNight;
+                double price = nights * item.Accommodation.PricePerNight;
+                totalPrice += price;
 
                 reservation.AccommodationInReservations.Add(new AccommodationInReservation
                 {
@@ -215,6 +243,8 @@ namespace Booking.Service.Implementation
                     FromDate = item.FromDate,
                     ToDate = item.ToDate
                 });
+
+                emailContent.AppendLine($"{item.Accommodation.Name}: {nights} nights, €{price:F2}");
             }
 
             reservation.TotalPrice = totalPrice;
@@ -222,6 +252,18 @@ namespace Booking.Service.Implementation
 
             cart.Accommodations.Clear();
             _reservationCartRepository.Update(cart);
+
+            if (!string.IsNullOrEmpty(cart.User.Email))
+            {
+                EmailMessage message = new EmailMessage
+                {
+                    MailTo = cart.User.Email,
+                    Subject = "Reservation Confirmed",
+                    Content = emailContent.AppendLine($"Total: ${totalPrice:F2}").ToString()
+                };
+
+                _emailService.SendEmailAsync(message);
+            }
 
             return new ReservationResultDTO
             {

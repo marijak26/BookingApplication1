@@ -19,9 +19,6 @@ namespace Booking.Domain.DomainModels
         [Display(Name = "Price Per Night")]
         public double PricePerNight { get; set; }
 
-        [Display(Name = "Is Rented")]
-        public bool IsRented { get; set; }
-
         [Display(Name = "Category")]
         public AccommodationCategory Category { get; set; }
 
