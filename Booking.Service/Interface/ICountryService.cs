@@ -12,6 +12,5 @@ namespace Booking.Service.Interface
         Task<List<Country>> GetCountriesFromApi();
         List<Country> GetAllCountriesFromDb();
         Country? GetById(Guid id);
-        void ClearCountriesAndCities();
     }
 }

@@ -26,38 +26,53 @@ namespace Booking.Service.Implementation
 
         public async Task<List<Country>> GetCountriesFromApi()
         {
-            ClearCountriesAndCities();
             var apiResponse = await _httpClient
                 .GetFromJsonAsync<CountryApiDTO>("https://countriesnow.space/api/v0.1/countries");
 
             if (apiResponse?.data == null || !apiResponse.data.Any())
                 return new List<Country>();
 
-            var countries = apiResponse.data
-                .Where(dto => !string.IsNullOrEmpty(dto.country))
-                .Select(dto =>
-                {
-                    var countryId = Guid.NewGuid();
-                    return new Country
-                    {
-                        Id = countryId,
-                        Name = dto.country,
-                        Cities = dto.cities
-                            .Where(c => !string.IsNullOrEmpty(c))
-                            .Take(5)
-                            .Select(cityName => new City
-                            {
-                                Id = Guid.NewGuid(),
-                                Name = cityName,
-                                CountryId = countryId
-                            }).ToList()
-                    };
-                })
+            var existingCountryNames = _countryRepository
+                .GetAll(x => x.Name)
                 .ToList();
 
-            _countryRepository.InsertMany(countries);
+            var newCountries = new List<Country>();
 
-            return countries;
+            foreach (var dto in apiResponse.data)
+            {
+                if (string.IsNullOrWhiteSpace(dto.country))
+                    continue;
+
+                if (existingCountryNames.Contains(dto.country))
+                    continue;
+
+                var countryId = Guid.NewGuid();
+
+                var country = new Country
+                {
+                    Id = countryId,
+                    Name = dto.country,
+                    Cities = dto.cities
+                        .Where(c => !string.IsNullOrWhiteSpace(c))
+                        .Take(5)
+                        .Select(cityName => new City
+                        {
+                            Id = Guid.NewGuid(),
+                            Name = cityName,
+                            CountryId = countryId
+                        })
+                        .ToList()
+                };
+
+                newCountries.Add(country);
+            }
+
+            if (newCountries.Any())
+            {
+                _countryRepository.InsertMany(newCountries);
+            }
+
+            return newCountries;
         }
 
         public List<Country> GetAllCountriesFromDb()
@@ -73,21 +88,6 @@ namespace Booking.Service.Implementation
                 selector: x => x,
                 predicate: x => x.Id == id
             );
-        }
-        public void ClearCountriesAndCities()
-        {
-            var countries = _countryRepository.GetAll(
-                x => x,
-                include: q => q.Include(c => c.Cities)
-            ).ToList();
-
-            var allCities = countries.SelectMany(c => c.Cities).ToList();
-
-            if (allCities.Any())
-                _cityRepository.DeleteMany(allCities);
-
-            if (countries.Any())
-                _countryRepository.DeleteMany(countries);
         }
     }
 }

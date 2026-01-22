@@ -38,13 +38,5 @@ namespace Booking.Web.Controllers
             ViewData["CountryId"] = new SelectList(countries, "Id", "Name");
             return View(countries);
         }
-
-        [Authorize(Roles = "Admin")]
-        public IActionResult ClearAll()
-        {
-            _countryService.ClearCountriesAndCities();
-            return RedirectToAction(nameof(Index));
-        }
-
     }
 }
