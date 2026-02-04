@@ -5,7 +5,11 @@
 
 <h2>Admin Dashboard - All Reservations</h2>
 
-<table class="table table-bordered mt-4">
+<div class="row">
+    <a class="btn btn-outline-danger" asp-controller="Home" asp-action="ExportReservations">Export Reservations</a>
+</div>
+
+<table class="table table-bordered mt-4" style="background-color: white; border-color: grey">
     <thead>
         <tr>
             <th scope="col">#</th>
@@ -40,7 +44,7 @@
                         }
                     </td>
                     <td>
-                        <a class="btn btn-outline-secondary btn-sm" asp-action="Details" asp-route-id="@reservation.Id">Details</a>
+                        <a class="btn btn-outline-primary btn-sm" asp-action="Details" asp-route-id="@reservation.Id">Details</a>
                     </td>
                 </tr>
             }

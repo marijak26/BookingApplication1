@@ -5,8 +5,11 @@ using Booking.Repository.Implementation;
 using Booking.Repository.Interface;
 using Booking.Service.Implementation;
 using Booking.Service.Interface;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +26,22 @@ builder.Services.AddDefaultIdentity<BookingApplicationUser>(options =>
 })
 .AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+var jwtKey = builder.Configuration["Jwt:Key"];
+var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
+
+builder.Services.AddAuthentication()
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes)
+        };
+    });
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped(typeof(IUserRepository), typeof(UserRepository));
@@ -60,6 +79,7 @@ using (var scope = app.Services.CreateScope())
         adminUser = new BookingApplicationUser
         {
             UserName = adminEmail,
+            FirstName = "Admin",
             Email = adminEmail,
             EmailConfirmed = true
         };

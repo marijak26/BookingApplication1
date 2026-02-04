@@ -50,7 +50,7 @@
                 <td>@acc.FromDate.ToString("dd/MM/yyyy")</td>
                 <td>@acc.ToDate.ToString("dd/MM/yyyy")</td>
                 <td>@((acc.ToDate - acc.FromDate).Days)</td>
-                <td>@acc.Accommodation?.PricePerNight.ToString("0.00") €</td>
+                <td>@acc.Accommodation?.PricePerNight.ToString("0") €</td>
             </tr>
         }
     </tbody>

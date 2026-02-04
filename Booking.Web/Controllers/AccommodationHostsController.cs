@@ -8,7 +8,6 @@ using System.Linq;
 
 namespace Booking.Web.Controllers
 {
-    [Authorize]
     public class AccommodationHostsController : Controller
     {
         private readonly IAccommodationHostService _hostService;

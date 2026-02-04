@@ -8,7 +8,6 @@ namespace AdminApplication.Controllers
     public class AdminAuthController : BaseApiController
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly string _bookingApiUrl = "http://localhost:5087/api/Auth/Login";
 
         public AdminAuthController(IHttpClientFactory httpClientFactory)
         {
@@ -26,10 +25,10 @@ namespace AdminApplication.Controllers
         {
             ClearAdminToken();
 
-            var client = _httpClientFactory.CreateClient();
+            var client = _httpClientFactory.CreateClient("BookingApi");
             var content = new StringContent(JsonSerializer.Serialize(model), Encoding.UTF8, "application/json");
 
-            var response = await client.PostAsync(_bookingApiUrl, content);
+            var response = await client.PostAsync("/api/Auth/Login", content);
 
             if (!response.IsSuccessStatusCode)
             {

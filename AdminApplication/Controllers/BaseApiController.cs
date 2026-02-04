@@ -8,15 +8,19 @@ namespace AdminApplication.Controllers
     {
         private const string AdminTokenKey = "JWTokenAdmin";
 
-        protected HttpClient GetClientWithToken()
+        protected HttpClient GetClientWithToken(HttpClient client = null)
         {
             var token = HttpContext.Session.GetString(AdminTokenKey);
-            var client = new HttpClient();
+
+            if (client == null)
+                client = new HttpClient();
+
             if (!string.IsNullOrEmpty(token))
             {
                 client.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", token);
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
             }
+
             return client;
         }
 

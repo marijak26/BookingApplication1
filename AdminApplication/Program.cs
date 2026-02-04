@@ -16,7 +16,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-builder.Services.AddHttpClient();
+builder.Services.AddHttpClient("BookingApi", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["BookingApi:BaseUrl"]);
+});
 
 builder.Services.AddSession(options =>
 {
@@ -48,7 +51,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBookingAPI",
         policy => policy
-            .WithOrigins("http://localhost:5087")
+            .WithOrigins(builder.Configuration["BookingApi:BaseUrl"])
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials());

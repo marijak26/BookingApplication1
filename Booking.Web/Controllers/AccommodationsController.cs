@@ -16,7 +16,6 @@ using System.Threading.Tasks;
 
 namespace Booking.Web.Controllers
 {
-    [Authorize]
     public class AccommodationsController : Controller
     {
         private readonly IAccommodationService _accommodationService;
@@ -198,13 +197,13 @@ namespace Booking.Web.Controllers
         {
             return _accommodationService.GetById(id) != null;
         }
-
+        [Authorize]
         public IActionResult AddToCart(Guid id)
         {
             var model = _accommodationService.GetSelectedAccommodation(id);
             return View("AddToReservationCart", model);
         }
-
+        [Authorize]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult AddToCart(AddToReservationCartDTO model)

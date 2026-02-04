@@ -23,7 +23,7 @@ namespace Booking.Web.Controllers.API
         }
 
         [HttpPost("Login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto model)
+        public async Task<IActionResult> Login(LoginDto model)
         {
             try
             {
