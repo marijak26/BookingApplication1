@@ -72,7 +72,9 @@ using (var scope = app.Services.CreateScope())
             await roleManager.CreateAsync(new IdentityRole(role));
     }
 
-    var adminEmail = "admin@gmail.com";
+    var adminEmail = builder.Configuration["AdminUser:Email"];
+    var adminPassword = builder.Configuration["AdminUser:Password"];
+
     var adminUser = await userManager.FindByEmailAsync(adminEmail);
     if (adminUser == null)
     {
@@ -83,9 +85,10 @@ using (var scope = app.Services.CreateScope())
             Email = adminEmail,
             EmailConfirmed = true
         };
-        await userManager.CreateAsync(adminUser, "Admin@1");
+        await userManager.CreateAsync(adminUser, adminPassword);
         await userManager.AddToRoleAsync(adminUser, "Admin");
     }
+
 
 }
 
